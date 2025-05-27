@@ -556,10 +556,12 @@ STIMA <- function(object, mode = c("GTEM", "procrustes", "RVSSimageJ"), scale = 
       print(suma_de_cuadrados)
       print(EuclDistance)
       
-      suma_de_cuadrados_order <- order(suma_de_cuadrados)
-      for (k in suma_de_cuadrados_order) {
-        nombre <- names(suma_de_cuadrados)[k]
-        if (EuclDistance[nombre] == min(EuclDistance)) {
+      suma_de_cuadrados_order <- sort(suma_de_cuadrados[is.finite(suma_de_cuadrados)])
+      EuclDistance_order <- sort(EuclDistance)
+      for (nombre in names(suma_de_cuadrados_order)) {
+        pos_sc <- match(nombre, names(suma_de_cuadrados_order))
+        pos_ed <- match(nombre, names(EuclDistance_order))
+        if (!is.na(pos_ed) && (pos_ed <= pos_sc)) {
           indice_fila_minima <- nombre
           break
         }
