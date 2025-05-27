@@ -52,6 +52,7 @@ solveCoord <- function(coord1, coord2, xmax, ymax) {
   solution <- optim(xstart, fn)
   solution <- solution$par
   names(solution) <- c('coseno', 'seno', 'dx', 'dy')
+  solution[["dy"]] <- - solution[["dy"]]
   
   return(solution)
 }
@@ -102,8 +103,8 @@ calcParameters <- function(solution, xmax, ymax, mode = c("GTEM", "procrustes") 
   angulo <- angle * (180/pi)
   
   # Calculate x and y translation parameters
-  trx <-  solution[["dx"]] / xmax
-  try <- - solution[["dy"]] / ymax
+  trx <- solution[["dx"]] / xmax
+  try <- solution[["dy"]] / ymax
   
   trx <- max(min(trx, 1), -1)
   try <- max(min(try, 1), -1)
@@ -247,8 +248,10 @@ resultProcrustes <- function(proc, mirrorx, mirrory, scale) {
   seno <- proc$R[2,1]
   if (scale == TRUE) {e <- proc$d} else if (scale == FALSE) {e <- 1} 
   
+
+  if (mirrorx == 0 && mirrory == 0) {dy <- - proc$t[2]} else {dy <- proc$t[2]}
   dx <- proc$t[1]
-  dy <- proc$t[2]
+  
   
   solucion <- c(coseno, seno, dx, dy, mirrorx, mirrory, e)
   names(solucion) <- c('coseno', 'seno', 'dx', 'dy', 'mirrorx', 'mirrory', 'e')
@@ -423,6 +426,7 @@ STIMA <- function(object, mode = c("GTEM", "procrustes", "RVSSimageJ"), scale = 
       ymax2 <- ncol(object.semla@tools$Staffli@rasterlists$raw[[i]])
 
       coordCalc <- list()
+      EuclDistance <- numeric()
 
       if (mode == "GTEM") {
 
@@ -432,7 +436,7 @@ STIMA <- function(object, mode = c("GTEM", "procrustes", "RVSSimageJ"), scale = 
         solucionOrig[["mirrory"]] <- 0
         solucionOrig[["e"]] <- 1
         coordCalc[["solucionOrig"]] <- calcNewCoord(coordenadas2, solucionOrig, xmax2, ymax2)
-        
+        EuclDistance[["solucionOrig"]] <- mean(EuclDist(list(coordenadas1, coordenadas2), c(1,2)))
     
         # Solve transformations with mirroring on the x-axis
         coordenadas2X <- coordenadas2
@@ -440,10 +444,11 @@ STIMA <- function(object, mode = c("GTEM", "procrustes", "RVSSimageJ"), scale = 
           coordenadas2X$x[[j]] <- xmax2 - coordenadas2X$x[[j]]
         }
         solucionMirrorX <- solveCoord(coordenadas1, coordenadas2X, xmax2, ymax2)
-        solucionMirrorX[["mirrorx"]] <- 10
+        solucionMirrorX[["mirrorx"]] <- 1
         solucionMirrorX[["mirrory"]] <- 0
         solucionMirrorX[["e"]] <- 1
         coordCalc[["solucionMirrorX"]] <- calcNewCoord(coordenadas2, solucionMirrorX, xmax2, ymax2)
+        EuclDistance[["solucionMirrorX"]] <- mean(EuclDist(list(coordenadas1, coordenadas2X), c(1,2)))
     
         # Solve transformations with mirroring on the y-axis
         coordenadas2Y <- coordenadas2
@@ -452,9 +457,10 @@ STIMA <- function(object, mode = c("GTEM", "procrustes", "RVSSimageJ"), scale = 
         }
         solucionMirrorY <- solveCoord(coordenadas1, coordenadas2Y, xmax2, ymax2)
         solucionMirrorY[["mirrorx"]] <- 0
-        solucionMirrorY[["mirrory"]] <- 10
+        solucionMirrorY[["mirrory"]] <- 1
         solucionMirrorY[["e"]] <- 1
         coordCalc[["solucionMirrorY"]] <- calcNewCoord(coordenadas2, solucionMirrorY, xmax2, ymax2)
+        EuclDistance[["solucionMirrorY"]] <- mean(EuclDist(list(coordenadas1, coordenadas2Y), c(1,2)))
     
         # Solve transformations with mirroring on both x and y axes
         coordenadas2XY <- coordenadas2
@@ -465,10 +471,11 @@ STIMA <- function(object, mode = c("GTEM", "procrustes", "RVSSimageJ"), scale = 
           coordenadas2XY$y[[j]] <- ymax2 - coordenadas2XY$y[[j]]
         }
         solucionMirrorXY <- solveCoord(coordenadas1, coordenadas2XY, xmax2, ymax2)
-        solucionMirrorXY[["mirrorx"]] <- 10
+        solucionMirrorXY[["mirrorx"]] <- 1
         solucionMirrorXY[["mirrory"]] <- 1
         solucionMirrorXY[["e"]] <- 1
         coordCalc[["solucionMirrorXY"]] <- calcNewCoord(coordenadas2, solucionMirrorXY, xmax2, ymax2)
+        EuclDistance[["solucionMirrorXY"]] <- mean(EuclDist(list(coordenadas1, coordenadas2XY), c(1,2)))
 
       } else if (mode == "procrustes") {
         
@@ -477,6 +484,7 @@ STIMA <- function(object, mode = c("GTEM", "procrustes", "RVSSimageJ"), scale = 
         proc <- IMIFA::Procrustes(X = matProb, Xstar = matrixCoord1, translate = TRUE, dilate = scale, sumsq = FALSE)
         solucionOrig <- resultProcrustes(proc, 0, 0, scale)
         coordCalc[["solucionOrig"]] <- proc$X.new
+        EuclDistance[["solucionOrig"]] <- mean(EuclDist(list(coordenadas1, coordenadas2), c(1,2)))
     
         # Solve with mirror on x-axis
         coordenadas2X <- coordenadas2
@@ -485,8 +493,9 @@ STIMA <- function(object, mode = c("GTEM", "procrustes", "RVSSimageJ"), scale = 
         }
         matProb <- matrix(data = unlist(coordenadas2X), ncol = 2)
         proc <- IMIFA::Procrustes(X = matProb, Xstar = matrixCoord1, translate = TRUE, dilate = scale, sumsq = FALSE) 
-        solucionMirrorX <- resultProcrustes(proc, 10, 0, scale)
+        solucionMirrorX <- resultProcrustes(proc, 1, 0, scale)
         coordCalc[["solucionMirrorX"]] <- proc$X.new
+        EuclDistance[["solucionMirrorX"]] <- mean(EuclDist(list(coordenadas1, coordenadas2X), c(1,2)))
     
         # Solve with mirror on y-axis
         coordenadas2Y <- coordenadas2
@@ -495,8 +504,9 @@ STIMA <- function(object, mode = c("GTEM", "procrustes", "RVSSimageJ"), scale = 
         }
         matProb <- matrix(data = unlist(coordenadas2Y), ncol = 2)
         proc <- IMIFA::Procrustes(X = matProb, Xstar = matrixCoord1, translate = TRUE, dilate = scale, sumsq = FALSE)
-        solucionMirrorY <- resultProcrustes(proc, 0, 10, scale)
+        solucionMirrorY <- resultProcrustes(proc, 0, 1, scale)
         coordCalc[["solucionMirrorY"]] <- proc$X.new
+        EuclDistance[["solucionMirrorY"]] <- mean(EuclDist(list(coordenadas1, coordenadas2Y), c(1,2)))
         
         # Solve with mirror on both x and y axes
         coordenadas2XY <- coordenadas2
@@ -510,6 +520,7 @@ STIMA <- function(object, mode = c("GTEM", "procrustes", "RVSSimageJ"), scale = 
         proc <- IMIFA::Procrustes(X = matProb, Xstar = matrixCoord1, translate = TRUE, dilate = scale, sumsq = FALSE)
         solucionMirrorXY <- resultProcrustes(proc, 1, 1, scale)
         coordCalc[["solucionMirrorXY"]] <- proc$X.new
+        EuclDistance[["solucionMirrorXY"]] <- mean(EuclDist(list(coordenadas1, coordenadas2XY), c(1,2)))
       }
     
       # Store each transformation option in a list for the current image
@@ -538,10 +549,23 @@ STIMA <- function(object, mode = c("GTEM", "procrustes", "RVSSimageJ"), scale = 
       suma_de_cuadrados <- sapply(todosvalores, function(valores) {
         if (abs(valores[["trx"]]) >= 1 || abs(valores[["try"]]) >= 1) {
           return(Inf)
-        } else {return(sum(valores^2))}
+        } else {
+          if (mode == "procrustes") {return(sum(valores[1:3]^2))
+          } else if (mode == "GTEM") {return(sum(valores[1:3]^2))}}
       })
+      print(suma_de_cuadrados)
+      print(EuclDistance)
       
-      indice_fila_minima <- names(which.min(suma_de_cuadrados)) # Name of minimum sum of squares
+      suma_de_cuadrados_order <- order(suma_de_cuadrados)
+      for (k in suma_de_cuadrados_order) {
+        nombre <- names(suma_de_cuadrados)[k]
+        if (EuclDistance[nombre] == min(EuclDistance)) {
+          indice_fila_minima <- nombre
+          break
+        }
+      }
+      
+      #indice_fila_minima <- names(which.min(suma_de_cuadrados)) # Name of minimum sum of squares
       print(indice_fila_minima)
       
       # Determine mirroring settings based on the index of the optimal transformation
