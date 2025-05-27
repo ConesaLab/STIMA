@@ -557,7 +557,7 @@ STIMA <- function(object, mode = c("GTEM", "procrustes", "RVSSimageJ"), scale = 
       print(EuclDistance)
       
       suma_de_cuadrados_order <- sort(suma_de_cuadrados[is.finite(suma_de_cuadrados)])
-      EuclDistance_order <- sort(EuclDistance)
+      EuclDistance_order <- sort(EuclDistance[is.finite(suma_de_cuadrados)])
       for (nombre in names(suma_de_cuadrados_order)) {
         pos_sc <- match(nombre, names(suma_de_cuadrados_order))
         pos_ed <- match(nombre, names(EuclDistance_order))
