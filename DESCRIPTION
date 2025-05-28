@@ -17,10 +17,8 @@ Depends:
     Seurat (== 5.0.2),
     semla (== 1.3.1)
 Imports: 
-    patchwork,
     spacexr (>= 2.2.1),
     reticulate (>= 1.40.0),
-    tibble (>= 3.2.1),
     imager,
     IMIFA,
     SpatialPack,
@@ -35,12 +33,11 @@ Imports:
     foreach,
     Matrix,
     data.table,
-    dplyr,
-    ggpubr,
-    gridExtra,
-    reshape2,
     scales,
-    tidyr
+    tibble,
+    stats,
+    reshape2,
+    grDevices
 SystemRequirements: 
     Python (<= 3.13.1),
     ImageMagick++ (via conda: conda install -c conda-forge imagemagick), 
@@ -62,20 +59,11 @@ Suggests:
     SeuratDisk,
     SeuratObject,
     hdf5r,
-    parallelly,
-    png, 
+    patchwork,
+    parallelly, 
     testthat (>= 3.0.0),
     SparseArray,
-    grDevices,
-    knitr,
-    rmarkdown,
-    htmltools,
-    vembedr,
-    BiocManager,
-    BiocGenerics,
     MatrixGenerics,
     matrixStats,
-    dbplyr,
-    dtplyr,
-    remotes
+    tidyr
 Config/testthat/edition: 3

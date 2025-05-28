@@ -98,7 +98,7 @@ graph_cellTypesDeconvolution <- function(listaObjDeconv,
   # Save the legend
   legendlist <- list()
   for (i in seq_along(cell.types)) {
-    legendlist[[cell.types[[i]]]] <- SpatialFeaturePlot(listaObjAnnot$reference, 
+    legendlist[[cell.types[[i]]]] <- SpatialFeaturePlot(listaObjDeconv[[patient]][["reference"]], 
                                                   features = cell.types[[i]], 
                                                   pt.size.factor = 0, 
                                                   crop = FALSE, 
@@ -137,7 +137,7 @@ graph_evalMetrics <- function(modes = c("GTEM", "procrustes", "RVSSimageJ","PAST
   typeComparison <- "max_pixels"
   listaEvalFiles <- setNames(vector("list", length(modes)), modes)
   for (mode in modes) { 
-    listaEvalFiles[["mode"]] <- readRDS(paste0(dataDir, "evaluation_merge_",mode,".rds"))
+    listaEvalFiles[[mode]] <- readRDS(paste0(dataDir, "evaluation_merge_",mode,".rds"))
   }
   RV_table <- readRDS(paste0(dataDir, "objectAligned_RV_merge.rds"))
 

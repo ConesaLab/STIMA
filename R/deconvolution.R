@@ -322,15 +322,9 @@ deconvolutionRCTD_mergeFiles <- function(modes = c("GTEM", "procrustes", "RVSSim
 #' 
 #' @param listaObjAnnot list of objects after deconvolution
 #' @return rv_long A data frame containing the RV coefficients and p-values for the comparison of cell types across different images.
-#' @import grDevices
 #' @import data.table
 #' @import stats
-#' @import FactoMineR
 #' @import reshape2
-#' @import ggplot2
-#' @import ggpubr
-#' @import dplyr
-#' @import tidyr
 matrixComparison <- function(listaObjAnnot) {
   # Build empty matrixes
   imageMatrixRef <- data.table::data.table(matrix(numeric(0), ncol = 11))

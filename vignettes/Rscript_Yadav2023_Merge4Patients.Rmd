@@ -1,5 +1,5 @@
 ---
-title: "Rscript_Yadav2023_Merge4Patients"
+title: "Create Seurat objects and merge slices from the mix of patients"
 author: "Victor Gaya"
 date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette

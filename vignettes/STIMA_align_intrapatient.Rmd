@@ -1,5 +1,5 @@
 ---
-title: "STIMA_align_intrapatient"
+title: "Alignment of slices from a single patient"
 author: "Victor Gaya"
 date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
