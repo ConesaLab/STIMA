@@ -9,9 +9,8 @@
 #' @import Seurat
 #' @import ggplot2
 #' @import patchwork
-#' @import scales
 #' @import grDevices
-#' @import cowplot
+#' @include alignment.R
 #' @export
 graph_cellTypesDeconvolution <- function(listaObjDeconv,
                                          cell.types = c("Astrcytes", "Microglia", "OPC", "Endothelial", 
@@ -35,7 +34,7 @@ graph_cellTypesDeconvolution <- function(listaObjDeconv,
     for (mode in modos) {
       for (j in names(listaObjDeconv[[patient]][[mode]])) {
         if ((j == "1" & mode == modos[[1]]) | j != "1") {
-          listaGraphs[[j]][[cell.types[[i]]]][[mode]] <- SpatialFeaturePlot(listaObjDeconv[[patient]][[mode]][[j]], 
+          listaGraphs[[j]][[cell.types[[i]]]][[mode]] <- Seurat::SpatialFeaturePlot(listaObjDeconv[[patient]][[mode]][[j]], 
                                                                             features = cell.types[[i]], 
                                                                             pt.size.factor = 1.2, 
                                                                             crop = FALSE, 
@@ -44,7 +43,7 @@ graph_cellTypesDeconvolution <- function(listaObjDeconv,
                                  limits = c(0, 1), 
                                  oob = scales::squish)
           
-          listaPoints[[j]][[cell.types[[i]]]][[mode]] <- SpatialFeaturePlot(listaObjDeconv[[patient]][[mode]][[j]], 
+          listaPoints[[j]][[cell.types[[i]]]][[mode]] <- Seurat::SpatialFeaturePlot(listaObjDeconv[[patient]][[mode]][[j]], 
                                                                             features = cell.types[[i]], 
                                                                             pt.size.factor = 1.2, 
                                                                             crop = FALSE, 
@@ -98,7 +97,7 @@ graph_cellTypesDeconvolution <- function(listaObjDeconv,
   # Save the legend
   legendlist <- list()
   for (i in seq_along(cell.types)) {
-    legendlist[[cell.types[[i]]]] <- SpatialFeaturePlot(listaObjDeconv[[patient]][["reference"]], 
+    legendlist[[cell.types[[i]]]] <- Seurat::SpatialFeaturePlot(listaObjDeconv[[patient]][["reference"]], 
                                                   features = cell.types[[i]], 
                                                   pt.size.factor = 0, 
                                                   crop = FALSE, 
@@ -107,7 +106,7 @@ graph_cellTypesDeconvolution <- function(listaObjDeconv,
                            limits = c(0, 1), 
                            oob = scales::squish)
   }
-  leyenda_combined <- plot_grid(plotlist = legendlist, ncol = 2, align = "v")
+  leyenda_combined <- cowplot::plot_grid(plotlist = legendlist, ncol = 2, align = "v")
   ggsave(paste0(saveDir, "/legend.png"), plot = leyenda_combined)
 
 }
@@ -118,12 +117,7 @@ graph_cellTypesDeconvolution <- function(listaObjDeconv,
 #' @param patientType Type of patient data. Options are 'unique' or 'multiple'.
 #' @param colors Colors for the graphs
 #' @import ggplot2
-#' @import ggpubr
-#' @import tidyr
-#' @import gridExtra
-#' @import grid
-#' @import lme4
-#' @import lmerTest
+#' @include alignment.R
 #' @export
 graph_evalMetrics <- function(modes = c("GTEM", "procrustes", "RVSSimageJ","PASTE2","STalign"), patientType = c('unique','multiple'),
                               colors = c("green","red","lightblue","orange","pink","violet","purple","mediumpurple","purple4")) {
@@ -340,7 +334,7 @@ graph_evalMetrics <- function(modes = c("GTEM", "procrustes", "RVSSimageJ","PAST
 
   listaStats[["control"]] <- stats_df
 
-  datosEucl_long <- pivot_longer(
+  datosEucl_long <- tidyr::pivot_longer(
     datosEucl,
     cols = c(control, transformed),
     names_to  = "condition",
@@ -357,7 +351,7 @@ graph_evalMetrics <- function(modes = c("GTEM", "procrustes", "RVSSimageJ","PAST
 
   resultsEucl <- lapply(levels(datosEucl_long$method), function(method_i) {
     dd <- subset(datosEucl_long, method == method_i)
-    mod <- lmer(
+    mod <- lmerTest::lmer(
       distance ~ condition + (1 | image_id),
       data = dd)
     # p‑value for ‘condition’ with Anova 
@@ -376,7 +370,7 @@ graph_evalMetrics <- function(modes = c("GTEM", "procrustes", "RVSSimageJ","PAST
   }
 
 
-  datosRV_long <- pivot_longer(
+  datosRV_long <- tidyr::pivot_longer(
     datosRV,
     cols = c(control, transformed),
     names_to  = "condition",
@@ -393,7 +387,7 @@ graph_evalMetrics <- function(modes = c("GTEM", "procrustes", "RVSSimageJ","PAST
 
   resultsRV <- lapply(levels(datosRV_long$method), function(method_i) {
     dd <- subset(datosRV_long, method == method_i)
-    mod <- lmer(
+    mod <- lmerTest::lmer(
       RV ~ condition + (1 | image_id),
       data = dd)
     # p‑value for ‘condition’ with Anova 
@@ -479,7 +473,7 @@ graph_evalMetrics <- function(modes = c("GTEM", "procrustes", "RVSSimageJ","PAST
             axis.title.y = element_text(size = 34),
             legend.position = "none") +
       mapply(function(comp, pval, ypos) {
-        geom_signif(comparisons = list(comp), annotations = sprintf("%.4f", pval), y_position = ypos, 
+        ggsignif::geom_signif(comparisons = list(comp), annotations = sprintf("%.4f", pval), y_position = ypos, 
                     tip_length = 0.02 / maxY, textsize = 10, color = ifelse(pval <= 0.05, "red", "black"))
       }, comparisons, p_values, y_positions)
 
@@ -489,7 +483,7 @@ graph_evalMetrics <- function(modes = c("GTEM", "procrustes", "RVSSimageJ","PAST
     listaGraphs[[metric]] <- plot
   }
 
-  combined_plot <- grid.arrange(
+  combined_plot <- gridExtra::grid.arrange(
     unlist(listaGraphs),
     ncol = 1, 
     heights = c(1, 1, 1, 1, 1.6)

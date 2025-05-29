@@ -3,9 +3,12 @@ Type: Package
 Title: Spatial Transcriptomics Image-based Methods for Alignment
 Version: 0.1
 Authors@R: 
-    person("Víctor A.", "Gaya-Martín", , "vagayam11@gmail.com", role = c("aut", "cre"))
+    person("Víctor A.", "Gaya-Martín",
+           email = "vagayam11@gmail.com", 
+           role = c("aut", "cre"),
+           comment = c(ORCID = "0009-0002-7007-9124"))
 Description: Spatial Transcriptomics data alignment in a pairwise comparison manner based exclusively on image data without incorporating gene expression data.
-License: GPL-2
+License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.2
@@ -14,9 +17,9 @@ LazyData: false
 Remotes:
     ludvigla/semla
 Depends: 
-    R (>= 4.2.0),
+    R (>= 4.1.0),
     Seurat (<= 5.0.2),
-    semla (<= 1.3.1)
+    semla (>= 1.3.1)
 Imports: 
     spacexr (>= 2.2.1),
     reticulate (>= 1.40.0),
@@ -68,3 +71,13 @@ Suggests:
     matrixStats,
     tidyr
 Config/testthat/edition: 3
+Collate: 
+    'FlipFunction.R'
+    'STIMA-package.R'
+    'utils.R'
+    'alignment.R'
+    'deconvolution.R'
+    'evaluation.R'
+    'graphs.R'
+    'publishedMethodsComparison.R'
+    'zzz.R'

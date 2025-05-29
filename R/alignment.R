@@ -273,7 +273,7 @@ resultProcrustes <- function(proc, mirrorx, mirrory, scale) {
 #' @return object.seurat aligned
 #' @import semla
 #' @import Seurat
-#' @import tibble
+#' @include utils.R
 #' @export
 STIMA <- function(object, mode = c("GTEM", "procrustes", "RVSSimageJ"), scale = FALSE) {
   mode <- match.arg(mode) 
@@ -287,8 +287,8 @@ STIMA <- function(object, mode = c("GTEM", "procrustes", "RVSSimageJ"), scale = 
 
   min_image_height <- as.numeric(min(x_dims))
 
-  object.semla <- UpdateSeuratForSemla(object)
-  object.semla <- LoadImages(object.semla, image_height = min_image_height)
+  object.semla <- semla::UpdateSeuratForSemla(object)
+  object.semla <- semla::LoadImages(object.semla, image_height = min_image_height)
 
   #ImagePlot(object.semla)
 
@@ -300,8 +300,8 @@ STIMA <- function(object, mode = c("GTEM", "procrustes", "RVSSimageJ"), scale = 
     listaTransforms <- list(NA)
     
     # Extract column and row coordinates for sample ID 1 from Seurat object
-    CoordinatesSemlaCol <- list(GetCoordinates(object.semla)[which(GetCoordinates(object.semla)["sampleID"] == 1), 2])
-    CoordinatesSemlaRow <- list(GetCoordinates(object.semla)[which(GetCoordinates(object.semla)["sampleID"] == 1), 3])
+    CoordinatesSemlaCol <- list(semla::GetCoordinates(object.semla)[which(semla::GetCoordinates(object.semla)["sampleID"] == 1), 2])
+    CoordinatesSemlaRow <- list(semla::GetCoordinates(object.semla)[which(semla::GetCoordinates(object.semla)["sampleID"] == 1), 3])
     
     "
     This is the point where you would save the images from the RDS file into a source_dir folder, 
@@ -663,10 +663,10 @@ STIMA <- function(object, mode = c("GTEM", "procrustes", "RVSSimageJ"), scale = 
   
     # Apply mirror transformation if the mirror values are non-zero
     if (mode != "RVSSimageJ") { if (valores[['mirrorx']] != 0 || valores[['mirrory']] != 0) {
-      transforms_mirror <- generate_rigid_transform(sampleID = i, 
+      transforms_mirror <- semla::generate_rigid_transform(sampleID = i, 
                                                     mirror_x = as.logical(valores[['mirrorx']]),
                                                     mirror_y = as.logical(valores[['mirrory']]))
-      object.semla <- RigidTransformImages(object.semla, transforms = transforms_mirror)
+      object.semla <- semla::RigidTransformImages(object.semla, transforms = transforms_mirror)
       alltransforms[[1]] <- transforms_mirror
       object.semla@tools$Staffli@rasterlists$raw[[i]] <- object.semla@tools$Staffli@rasterlists$transformed[[i]]
     
@@ -682,9 +682,9 @@ STIMA <- function(object, mode = c("GTEM", "procrustes", "RVSSimageJ"), scale = 
     # Apply rotation if the angle is non-zero
     angulo <- valores[['angulo']]
     if ( angulo != 0 && angulo != 360 ){
-      transforms_angle <- generate_rigid_transform(sampleID = i, 
+      transforms_angle <- semla::generate_rigid_transform(sampleID = i, 
                                                   angle = angulo)
-      object.semla <- RigidTransformImages(object.semla, transforms = transforms_angle)
+      object.semla <- semla::RigidTransformImages(object.semla, transforms = transforms_angle)
       alltransforms[[2]] <- transforms_angle
       object.semla@tools$Staffli@rasterlists$raw[[i]] <- object.semla@tools$Staffli@rasterlists$transformed[[i]]
     
@@ -699,10 +699,10 @@ STIMA <- function(object, mode = c("GTEM", "procrustes", "RVSSimageJ"), scale = 
   
     # Apply translation if dx or dy is non-zero
     if ( valores[['trx']] != 0 || valores[['try']] != 0 ) {
-      transforms_trans <- generate_rigid_transform(sampleID = i, 
+      transforms_trans <- semla::generate_rigid_transform(sampleID = i, 
                                                   tr_x = valores[['trx']], #round(valores[[2]], digits = 2), 
                                                   tr_y = valores[['try']]) #round(valores[[3]], digits = 2),
-      object.semla <- RigidTransformImages(object.semla, transforms = transforms_trans)
+      object.semla <- semla::RigidTransformImages(object.semla, transforms = transforms_trans)
       alltransforms[[3]] <- transforms_trans
       object.semla@tools$Staffli@rasterlists$raw[[i]] <- object.semla@tools$Staffli@rasterlists$transformed[[i]]
     
@@ -717,9 +717,9 @@ STIMA <- function(object, mode = c("GTEM", "procrustes", "RVSSimageJ"), scale = 
   
     # Apply scaling if the scale factor is non-zero
     if ( valores[['e']] != 1 ) {
-      transforms_scale <- generate_rigid_transform(sampleID = i, 
+      transforms_scale <- semla::generate_rigid_transform(sampleID = i, 
                                                   scalefactor = valores[['e']])
-      object.semla <- RigidTransformImages(object.semla, transforms = transforms_scale)
+      object.semla <- semla::RigidTransformImages(object.semla, transforms = transforms_scale)
       alltransforms[[4]] <- transforms_scale
       object.semla@tools$Staffli@rasterlists$raw[[i]] <- object.semla@tools$Staffli@rasterlists$transformed[[i]]
     
@@ -738,8 +738,8 @@ STIMA <- function(object, mode = c("GTEM", "procrustes", "RVSSimageJ"), scale = 
     listaTransforms[[i]] <- alltransforms
   
     # Save transformed coordinates for each sample
-    CoordinatesSemlaCol[[i]] <- GetCoordinates(object.semla)[which(GetCoordinates(object.semla)[6] == i), 4]
-    CoordinatesSemlaRow[[i]] <- GetCoordinates(object.semla)[which(GetCoordinates(object.semla)[6] == i), 5]
+    CoordinatesSemlaCol[[i]] <- semla::GetCoordinates(object.semla)[which(semla::GetCoordinates(object.semla)[6] == i), 4]
+    CoordinatesSemlaRow[[i]] <- semla::GetCoordinates(object.semla)[which(semla::GetCoordinates(object.semla)[6] == i), 5]
   }
 
   # Update transformed image list in Seurat object
@@ -763,14 +763,14 @@ STIMA <- function(object, mode = c("GTEM", "procrustes", "RVSSimageJ"), scale = 
   object.semla@tools$Staffli@meta_data$pxl_row_in_fullres_transformed <- CoordRow
 
   png(paste0(saveDir, "imagesOriginal",mode,".png"))
-  ImagePlot(object.semla)
+  semla::ImagePlot(object.semla)
   dev.off()
 
   png(paste0(saveDir, "imagesTransformed",mode,".png"))
-  ImagePlot(object.semla, image_use = "transformed")
+  semla::ImagePlot(object.semla, image_use = "transformed")
   dev.off()
 
-  object.seurat <- UpdateSeuratFromSemla(object.semla, image_use = "transformed")
+  object.seurat <- semla::UpdateSeuratFromSemla(object.semla, image_use = "transformed")
   saveRDS(object.seurat, paste0(saveDir, "objectAligned_merge_",mode,".rds"))
 
   if (mode == "RVSSimageJ") {

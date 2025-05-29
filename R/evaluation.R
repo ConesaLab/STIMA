@@ -5,8 +5,6 @@
 #' 
 #' @param objetHex A matrix or vector of hexadecimal color strings.  
 #' @return rgba_array A 3D array of integers with dimensions (rows, columns, 4), containing RGBA color channels.
-#' @import SpatialPack
-#' @import imager
 hex2rgb_table <- function(objetHex) {
   rgb_values <- col2rgb(objetHex, alpha = TRUE)  # Convert hex to RGB and alpha
   
@@ -31,8 +29,6 @@ hex2rgb_table <- function(objetHex) {
 #' 
 #' @param objetHex A matrix or vector of hexadecimal color strings.  
 #' @return rgba_array A 3D array of integers with dimensions (rows, columns, 4), containing RGBA color channels.
-#' @import SpatialPack
-#' @import imager
 hex2rgb_table_norm <- function(objetHex) {
   rgb_values <- col2rgb(objetHex, alpha = TRUE) / 255
   
@@ -57,7 +53,6 @@ hex2rgb_table_norm <- function(objetHex) {
 #' 
 #' @param objetRGB A numeric array of RGB values normalized between 0 and 1.
 #' @return An integer array with RGB values scaled to 0-255.
-#' @import SpatialPack
 rgb_table_norm2rgb_table <- function(objetRGB) {
   objetRGB <- round(objetRGB * 255)
   storage.mode(objetRGB) <- "integer"
@@ -73,8 +68,6 @@ rgb_table_norm2rgb_table <- function(objetRGB) {
 #' @param image1 A 3D array representing the first image (height x width x channels).
 #' @param image2 A 3D array representing the second image (same dimensions as image1).
 #' @return Numeric value representing the average MSE across RGB channels.
-#' @import SpatialPack
-#' @import imager
 mse <- function(image1, image2) {
   sum_error <- 0  # Initialize total error
   
@@ -97,11 +90,9 @@ mse <- function(image1, image2) {
 #' @param image1 A 3D array representing the first RGB image.
 #' @param image2 A 3D array representing the second RGB image.
 #' @return Numeric value representing the grayscale MSE between the two images.
-#' @import SpatialPack
-#' @import imager
 mseGS <- function(image1, image2) {
-  im1 <- RGB2gray(image1)  # Convert image 1 to grayscale
-  im2 <- RGB2gray(image2)  # Convert image 2 to grayscale
+  im1 <- SpatialPack::RGB2gray(image1)  # Convert image 1 to grayscale
+  im2 <- SpatialPack::RGB2gray(image2)  # Convert image 2 to grayscale
   
   # Calculate grayscale MSE by summing squared differences.
   error <- sum((im1[,] - im2[,])^2) / (nrow(im1) * ncol(im2))
@@ -115,7 +106,6 @@ mseGS <- function(image1, image2) {
 #' @param listaCoordenadas A list where each element contains a list with elements $x and $y representing coordinates.
 #' @param nIm A list or vector of length 2 with indices of the images to compare.
 #' @return Numeric value representing the Euclidean distance between the two coordinate sets.
-#' @import SpatialPack
 EuclDist <- function(listaCoordenadas, nIm) {
   # Retrieve coordinates for images i and j
   i <- nIm[[1]]
@@ -147,9 +137,7 @@ EuclDist <- function(listaCoordenadas, nIm) {
 #'   \item \code{ssim_value}: Structural Similarity Index.
 #'   \item \code{Eucl_value}: Euclidean distance between the coordinate sets.
 #' }
-#'
-#' @import SpatialPack
-#' @import imager
+#' 
 evalAlign <- function(image1, image2, listaCoordenadas, nIm) {
   # Ensure images have the same dimensions, converting to RGB if necessary.
   if (!all(dim(image1) == dim(image2))) stop("Images must have the same dimensions.")
@@ -164,8 +152,8 @@ evalAlign <- function(image1, image2, listaCoordenadas, nIm) {
   mse_gray_value <- mseGS(image1, image2)
   rmse_value <- sqrt(mse_value)
   # Calculate the SSIM
-  im1 <- RGB2gray(image1)
-  im2 <- RGB2gray(image2)
+  im1 <- SpatialPack::RGB2gray(image1)
+  im2 <- SpatialPack::RGB2gray(image2)
   ssim_value <- SpatialPack::SSIM(im1, im2)[["SSIM"]]
   # Calculate the Euclidean distance
   Eucl_value <- EuclDist(listaCoordenadas, nIm)
@@ -190,9 +178,6 @@ evalAlign <- function(image1, image2, listaCoordenadas, nIm) {
 #'   \item \code{Movement control solution}: Metrics when image is compared to a shifted version.
 #' }
 #'
-#' @import SpatialPack
-#' @import imager
-#' @import jpeg
 controlAlign <- function(image1) { 
   # If needed, convert the image to RGB format.
   if (is.na(dim(image1)[3])) image1 <- hex2rgb_table(image1)
@@ -207,21 +192,21 @@ controlAlign <- function(image1) {
   mse_value <- mse(image1rec, image1rec)
   mse_gray_value <- mseGS(image1rec, image1rec)
   rmse_value <- sqrt(mse_value)
-  im1 <- RGB2gray(image1rec)
-  ssim_value <- SSIM(im1, im1)[["SSIM"]]
+  im1 <- SpatialPack::RGB2gray(image1rec)
+  ssim_value <- SpatialPack::SSIM(im1, im1)[["SSIM"]]
   positive_solution <- list(mse_value = mse_value, mse_gray_value = mse_gray_value,
                             rmse_value = rmse_value, ssim_value = ssim_value)
   
   # Calculate alignment metrics for a negative control (image vs random image).
-  image2 <- readJPEG(system.file("extdata", "image_negative.JPG", package = "STIMA"))
+  image2 <- jpeg::readJPEG(system.file("extdata", "image_negative.JPG", package = "STIMA"))
   if (is.na(dim(image2)[3])) {image2 <- hex2rgb_table(image2)}
   
   image2 <- image2[1:dim(image1rec)[[1]], 1:dim(image1rec)[[2]], ]
   mse_value <- mse(image1rec, image2)
   mse_gray_value <- mseGS(image1rec, image2)
   rmse_value <- sqrt(mse_value)
-  im2 <- RGB2gray(image2)
-  ssim_value <- SSIM(im1, im2)[["SSIM"]]
+  im2 <- SpatialPack::RGB2gray(image2)
+  ssim_value <- SpatialPack::SSIM(im1, im2)[["SSIM"]]
   negative_solution <- list(mse_value = mse_value, mse_gray_value = mse_gray_value,
                             rmse_value = rmse_value, ssim_value = ssim_value)
   
@@ -230,8 +215,8 @@ controlAlign <- function(image1) {
   mse_value <- mse(image1rec, image3)
   mse_gray_value <- mseGS(image1rec, image3)
   rmse_value <- sqrt(mse_value)
-  im3 <- RGB2gray(image3)
-  ssim_value <- SSIM(im1, im3)[["SSIM"]]
+  im3 <- SpatialPack::RGB2gray(image3)
+  ssim_value <- SpatialPack::SSIM(im1, im3)[["SSIM"]]
   movement_solution <- list(mse_value = mse_value, mse_gray_value = mse_gray_value,
                             rmse_value = rmse_value, ssim_value = ssim_value)
   
@@ -274,8 +259,6 @@ controlAlign <- function(image1) {
 #'   \item{transformed}{Same structure as \code{original} but for transformed images.}
 #' }
 #'
-#' @import SpatialPack
-#' @import imager
 evaluationComplete <- function(listaCoordenadasNEW, listaCoordenadas,
                        listaRawImages, listaTransImages, patientType = c('unique','multiple')) {
 
@@ -635,8 +618,8 @@ evaluationComplete <- function(listaCoordenadasNEW, listaCoordenadas,
 #' @param listaCoordenadas List of original coordinates (optional, used mainly if mode != "RVSSimageJ").
 #' @param patientType Patient type, affecting region size ("unique" or "multiple").
 #' @return Evaluation results as a list.
-#' @import SpatialPack
-#' @import imager
+#' @include utils.R
+#' @include alignment.R
 #' @export 
 calculateEvaluation <- function(objeto.seurat, mode = c("GTEM", "procrustes", "RVSSimageJ"), 
                                 listaCoordenadasNEW = NULL, listaCoordenadas = NULL, 

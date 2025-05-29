@@ -7,6 +7,7 @@
 #' @param mode A character string indicating the deconvolution method to be used. Options are "GTEM", "procrustes", or "RVSSimageJ". Default is "GTEM". 
 #' @return NULL (side effect: saves lists of Seurat objects to files)
 #' @import Seurat
+#' @include alignment.R
 #' @export 
 createDeconvolutionLists <- function(object.seurat, 
                                      split_by = "name",  
@@ -21,7 +22,7 @@ createDeconvolutionLists <- function(object.seurat,
   
   # Obtain the individual object of the slide
   # Splits the Seurat object into a list of Seurat objects based on the 'name' metadata
-  object.seurat.split.orig <- SplitObject(object.seurat, split.by = split_by)
+  object.seurat.split.orig <- Seurat::SplitObject(object.seurat, split.by = split_by)
   
   # Create a copy of the split objects for transformed images
   object.seurat.split.trans <- object.seurat.split.orig
@@ -69,7 +70,7 @@ createDeconvolutionLists <- function(object.seurat,
 #' 
 #' @param reference object with the single-cell / single-nucelus reference for the deconvolution.
 #' @return reference object prepared for the deconvolution with RCTD
-#' @import spacexr
+#' @importFrom spacexr Reference
 createReferenceIfNeeded <- function(reference) {
   if (inherits(reference, "Reference") && 
       all(c("counts", "cell_types", "nUMI") %in% slotNames(reference1))) {
@@ -93,7 +94,7 @@ createReferenceIfNeeded <- function(reference) {
     # total counts appeallring on each pixel.
     nUMI <- colSums(counts)
 
-    reference <- Reference(counts, cell_types, nUMI, n_max_cells = 32000)
+    reference <- spacexr::Reference(counts, cell_types, nUMI, n_max_cells = 32000)
   }
 
   return(reference)  
@@ -108,9 +109,7 @@ createReferenceIfNeeded <- function(reference) {
 #' @param object An RCTD object.
 #' @return A Seurat Assay object containing the deconvolution results.
 #' @import Seurat
-#' @import Matrix
-#' @import data.table
-#' @import spacexr
+#' @importFrom Matrix sparseMatrix
 as_AssayObject <- function(object) {
   if (is(object, "RCTD")) {
     if (!requireNamespace("spacexr", quietly = TRUE)) {
@@ -136,12 +135,12 @@ as_AssayObject <- function(object) {
       #swm <- spacexr::normalize_weights(swm)
       #swm <- rbind(swm, max = apply(swm[!rownames(swm) %in% "unassigned", ], 2, max))
       swm <- as(swm, "sparseMatrix")
-      return(CreateAssayObject(data = swm))
+      return(Seurat::CreateAssayObject(data = swm))
     }
   } else if (length(r) == 1) {
     m <- t(spacexr::normalize_weights(as.matrix(r$weights)))
     m <- rbind(m, max = apply(m, 2, max))
-    return(CreateAssayObject(data = m))
+    return(Seurat::CreateAssayObject(data = m))
   }
 }
 
@@ -152,9 +151,7 @@ as_AssayObject <- function(object) {
 #' @param object An RCTD object.
 #' @return A Seurat Assay object containing the deconvolution results.
 #' @import Seurat
-#' @import Matrix
-#' @import data.table
-#' @import spacexr
+#' @importFrom Matrix sparseMatrix
 as_AssayObject_complete <- function(object) {
   if (is(object, "RCTD")) {
     if (!requireNamespace("spacexr", quietly = TRUE)) {
@@ -180,12 +177,12 @@ as_AssayObject_complete <- function(object) {
       #swm <- spacexr::normalize_weights(swm)
       #swm <- rbind(swm, max = apply(swm[!rownames(swm) %in% "unassigned", ], 2, max))
       swm <- as(swm, "sparseMatrix")
-      return(CreateAssayObject(data = swm))
+      return(Seurat::CreateAssayObject(data = swm))
     }
   } else if (length(r) == 1) {
     m <- t(spacexr::normalize_weights(as.matrix(r$weights)))
     m <- rbind(m, max = apply(m, 2, max))
-    return(CreateAssayObject(data = m))
+    return(Seurat::CreateAssayObject(data = m))
   }
 }
 
@@ -200,8 +197,7 @@ as_AssayObject_complete <- function(object) {
 #' @return A list of Seurat objects with deconvolution results added as assays.
 #' @import Seurat
 #' @import spacexr
-#' @import Matrix
-#' @import data.table
+#' @include alignment.R
 #' @export
 deconvolutionRCTD <- function(object.list, reference, im,
                               mode = c("GTEM", "procrustes", "RVSSimageJ")) {
@@ -217,8 +213,8 @@ deconvolutionRCTD <- function(object.list, reference, im,
   for (i in 1:length(object.list)) {
     objectST <- object.list[[i]]
     # we normalize the objects
-    objectST <- SCTransform(objectST, assay = "Spatial", verbose = FALSE) %>%
-                RunPCA(verbose = FALSE)
+    objectST <- Seurat::SCTransform(objectST, assay = "Spatial", verbose = FALSE) %>%
+                Seurat::RunPCA(verbose = FALSE)
         
     objname <- names(object.list[i])
     object.list[[objname]] <- objectST
@@ -243,19 +239,19 @@ deconvolutionRCTD <- function(object.list, reference, im,
     # counts appearing on each pixel.
     nUMI <- colSums(counts)
     
-    STsample <- SpatialRNA(coords, counts, nUMI)
+    STsample <- spacexr::SpatialRNA(coords, counts, nUMI)
     
     objname <- names(object.list[i])
     listaObjST_RCTD[[objname]] <- STsample
     
     # RCTD
     # Create RCTD object
-    myRCTD <- create.RCTD(listaObjST_RCTD[[i]], reference, max_cores = 8, UMI_min = 10)
+    myRCTD <- spacexr::create.RCTD(listaObjST_RCTD[[i]], reference, max_cores = 8, UMI_min = 10)
     # Run RCTD
-    myRCTD <- run.RCTD(myRCTD, doublet_mode = 'multi')
+    myRCTD <- spacexr::run.RCTD(myRCTD, doublet_mode = 'multi')
     
     # results
-    assay_myRCTD <- as_AssayObject(myRCTD)
+    assay_myRCTD <- Seurat::as_AssayObject(myRCTD)
     
     object.list[[i]]@assays[["deconvolution.RCTD"]] <- assay_myRCTD
 
@@ -278,9 +274,7 @@ deconvolutionRCTD <- function(object.list, reference, im,
 #' @param ims A character vector indicating the image numbers to be processed. Default is c("2","3","4").
 #' @return A list of Seurat objects with deconvolution results added as assays.
 #' @import Seurat
-#' @import spacexr
-#' @import Matrix
-#' @import data.table
+#' @include alignment.R
 #' @export
 deconvolutionRCTD_mergeFiles <- function(modes = c("GTEM", "procrustes", "RVSSimageJ"),
                                          ims = c("2","3","4")) {
@@ -301,7 +295,7 @@ deconvolutionRCTD_mergeFiles <- function(modes = c("GTEM", "procrustes", "RVSSim
       listaObjAnnot <- readRDS(paste0(saveDir, 'objectAligned_RCTD_SCAnnot_merge_', 
                                       mode, '_list_im', i, '.rds'))
       for (j in 1:length(listaObjAnnot)) {
-        DefaultAssay(listaObjAnnot[[j]]) <- "deconvolution.RCTD.complete"
+        Seurat::DefaultAssay(listaObjAnnot[[j]]) <- "deconvolution.RCTD.complete"
         RCTDmode <- "deconvolution.RCTD.complete"
       }
       
@@ -322,17 +316,14 @@ deconvolutionRCTD_mergeFiles <- function(modes = c("GTEM", "procrustes", "RVSSim
 #' 
 #' @param listaObjAnnot list of objects after deconvolution
 #' @return rv_long A data frame containing the RV coefficients and p-values for the comparison of cell types across different images.
-#' @import data.table
-#' @import stats
-#' @import reshape2
 matrixComparison <- function(listaObjAnnot) {
   # Build empty matrixes
   imageMatrixRef <- data.table::data.table(matrix(numeric(0), ncol = 11))
   imageMatrixNOT <- data.table::data.table(matrix(numeric(0), ncol = 11))
   imageMatrixYES <- data.table::data.table(matrix(numeric(0), ncol = 11))
-  setnames(imageMatrixRef, cell.types)  
-  setnames(imageMatrixNOT, cell.types)  
-  setnames(imageMatrixYES, cell.types)  
+  data.table::setnames(imageMatrixRef, cell.types)  
+  data.table::setnames(imageMatrixNOT, cell.types)  
+  data.table::setnames(imageMatrixYES, cell.types)  
   
   # Coordinates from the reference image
   objectST1 <- listaObjAnnot[[1]]
@@ -451,9 +442,9 @@ matrixComparison <- function(listaObjAnnot) {
     colmax <- colmin+5
   } # end for while col
   
-  imageMatrixRef <- rbindlist(lapply(listRef, as.list), fill = TRUE)
-  imageMatrixNOT <- rbindlist(lapply(listNOT, as.list), fill = TRUE)
-  imageMatrixYES <- rbindlist(lapply(listYES, as.list), fill = TRUE)
+  imageMatrixRef <- data.table::rbindlist(lapply(listRef, as.list), fill = TRUE)
+  imageMatrixNOT <- data.table::rbindlist(lapply(listNOT, as.list), fill = TRUE)
+  imageMatrixYES <- data.table::rbindlist(lapply(listYES, as.list), fill = TRUE)
   
   #table(complete.cases(imageMatrixRef))
   #table(complete.cases(imageMatrixNOT))
@@ -504,9 +495,9 @@ matrixComparison <- function(listaObjAnnot) {
   #rownames(rvstd_matrix) <- c("Reference", "Original", "Transformed")
   #colnames(rvstd_matrix) <- c("Reference", "Original", "Transformed")
   
-  rv_long <- melt(rv_matrix, varnames = c("Matrix_A", "Matrix_B"), value.name = "RV")
-  pval_long <- melt(pval_matrix, varnames = c("Matrix_A", "Matrix_B"), value.name = "p.value")
-  #rvstd_long <- melt(rvstd_matrix, varnames = c("Matrix_A", "Matrix_B"), value.name = "RVstd")
+  rv_long <- reshape::melt(rv_matrix, varnames = c("Matrix_A", "Matrix_B"), value.name = "RV")
+  pval_long <- reshape::melt(pval_matrix, varnames = c("Matrix_A", "Matrix_B"), value.name = "p.value")
+  #rvstd_long <- reshape::melt(rvstd_matrix, varnames = c("Matrix_A", "Matrix_B"), value.name = "RVstd")
   
   rv_long <- merge(rv_long, pval_long, by = c("Matrix_A", "Matrix_B"))
   
@@ -521,12 +512,8 @@ matrixComparison <- function(listaObjAnnot) {
 #' @param ims A character vector indicating the image numbers to be processed. Default is c("2","3","4").
 #' @return A list of RV coefficients for each deconvolution method and image.
 #' @import Seurat
-#' @import data.table
-#' @import reshape2
 #' @import foreach
-#' @import doParallel
-#' @import stats
-#' @import parallel
+#' @include alignment.R
 #' @export
 calculateRVcoeff <- function(modes = c("GTEM", "procrustes", "RVSSimageJ"),
                              ims = c("2","3","4")) {
@@ -536,8 +523,8 @@ calculateRVcoeff <- function(modes = c("GTEM", "procrustes", "RVSSimageJ"),
   }
   saveDir <- "./results/"
 
-  cl <- makeCluster(detectCores() - 4)
-  registerDoParallel(cl)
+  cl <- parallel::makeCluster(parallel::detectCores() - 4)
+  doParallel::registerDoParallel(cl)
   
   patient <- "1"
   print(patient)
@@ -549,7 +536,7 @@ calculateRVcoeff <- function(modes = c("GTEM", "procrustes", "RVSSimageJ"),
       cat(i)
       listaObjAnnot <- readRDS(paste0(saveDir,"objectAligned_merge_",mode,"_list_im",i,".rds"))
       
-      for (j in 1:length(listaObjAnnot)) {DefaultAssay(listaObjAnnot[[j]]) <- "deconvolution.RCTD.complete"; RCTDmode <- "deconvolution.RCTD.complete"}
+      for (j in 1:length(listaObjAnnot)) {Seurat::DefaultAssay(listaObjAnnot[[j]]) <- "deconvolution.RCTD.complete"; RCTDmode <- "deconvolution.RCTD.complete"}
       
       # calcular
       rvMatrix <- matrixComparison(listaObjAnnot = listaObjAnnot)
@@ -564,7 +551,7 @@ calculateRVcoeff <- function(modes = c("GTEM", "procrustes", "RVSSimageJ"),
   }
   saveRDS(RV_table, paste0(saveDir, "objectAligned_RV_merge.rds"))
 
-  stopCluster(cl)
+  parallel::stopCluster(cl)
 
   return(RV_table)
 }

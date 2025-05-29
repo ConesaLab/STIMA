@@ -6,7 +6,6 @@
 #'
 #' @param image Image where landmarks are selected 
 #' @return list containing the coordinates of the selected points with two elements: x and y.
-#' @import imager
 #' @export
 selectCoordPython <- function(image) {
   par(mfrow=c(1,1))
@@ -14,7 +13,7 @@ selectCoordPython <- function(image) {
        xlab=NA, ylab=NA, axes = FALSE, asp=1)
   rasterImage(image, xleft = 0, xright = ncol(image),
               ytop = 0, ybottom = nrow(image), interpolate = FALSE)
-  coordinates <- locator(type = "p")
+  coordinates <- imager::locator(type = "p")
   return(coordinates)
 }
 
@@ -175,8 +174,6 @@ STaligntoSeurat <- function(object.STalign, object, patientType = c('unique','mu
 #' @param listaCoordenadas List of original coordinates (optional, used mainly if mode != "RVSSimageJ").
 #' @param patientType Patient type, affecting region size ("unique" or "multiple").
 #' @return Evaluation
-#' @import SpatialPack
-#' @import imager
 #' @export 
 calculateEvaluationPython <- function(objeto.seurat, mode = c("STalign", "PASTE2"), 
                                 listaCoordenadasNEW, listaCoordenadas, 
@@ -265,7 +262,7 @@ createDeconvolutionListsPython <- function(object.seurat, object,
   
   # Obtain the individual object of the slide
   # Splits the Seurat object into a list of Seurat objects based on the 'name' metadata
-  object.seurat.split.orig <- SplitObject(object, split.by = split_by)
+  object.seurat.split.orig <- Seurat::SplitObject(object, split.by = split_by)
   
   # Create a copy of the split objects for transformed images
   object.seurat.split.trans <- object.seurat.split.orig
