@@ -41,7 +41,8 @@ Imports:
     tibble,
     stats,
     reshape2,
-    grDevices
+    grDevices, 
+    patchwork
 SystemRequirements: 
     Python (<= 3.13.1),
     ImageMagick++ (via conda: conda install -c conda-forge imagemagick), 
@@ -63,7 +64,6 @@ Suggests:
     SeuratDisk,
     SeuratObject,
     hdf5r,
-    patchwork,
     parallelly, 
     testthat (>= 3.0.0),
     SparseArray,
