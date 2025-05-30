@@ -117,10 +117,13 @@ graph_cellTypesDeconvolution <- function(listaObjDeconv,
 #' @param patientType Type of patient data. Options are 'unique' or 'multiple'.
 #' @param colors Colors for the graphs
 #' @import ggplot2
+#' @import stats
 #' @include alignment.R
 #' @export
 graph_evalMetrics <- function(modes = c("GTEM", "procrustes", "RVSSimageJ","PASTE2","STalign"), patientType = c('unique','multiple'),
-                              colors = c("green","red","lightblue","orange","pink","violet","purple","mediumpurple","purple4")) {
+                              colors = c("green","red","lightblue",
+                                         "orange","pink","violet","purple","mediumpurple","purple4",
+                                         "burlywood","darkgoldenrod","saddlebrown")) {
   patientType <- match.arg(patientType)
   if (!dir.exists("./results/graphs/")) {
     dir.create("./results/graphs/", recursive = TRUE)
@@ -129,20 +132,20 @@ graph_evalMetrics <- function(modes = c("GTEM", "procrustes", "RVSSimageJ","PAST
 
   dataDir <- "./results/"
   typeComparison <- "max_pixels"
-  listaEvalFiles <- setNames(vector("list", length(modes)), modes)
+  listaEvalFiles <- stats::setNames(vector("list", length(modes)), modes)
   for (mode in modes) { 
     listaEvalFiles[[mode]] <- readRDS(paste0(dataDir, "evaluation_merge_",mode,".rds"))
   }
   RV_table <- readRDS(paste0(dataDir, "objectAligned_RV_merge.rds"))
 
   metrics <- c("1 MSE", "2 MSE Gray", "3 SSIM", "4 Euclidean", "5 RV")
-  
+
   listaDataFrames <- list()
   listaStats <- list()
   listaControl <- data.frame()
   datosEucl <- data.frame()
   datosRV <- data.frame()
-
+  
   for (elem in seq_along(listaEvalFiles)) {
     Evaluation <- listaEvalFiles[[elem]]
     RVvalue <- RV_table[[elem]]
@@ -199,13 +202,13 @@ graph_evalMetrics <- function(modes = c("GTEM", "procrustes", "RVSSimageJ","PAST
       SSIM_controlPos <- c(SSIM_controlPos, Evaluation$control[[i]]$`Positive control solution`$ssim_value)
       SSIM_controlNeg <- c(SSIM_controlNeg, Evaluation$control[[i]]$`Negative control solution`$ssim_value)
       SSIM_controlMov <- c(SSIM_controlMov, Evaluation$control[[i]]$`Movement control solution`$ssim_value)
-
+      
       Image <- c(Image, paste0("Image",i))
     }
     
     data_control <- data.frame(
       Image = Image,
-      Group = group,
+      Group = c(group, group, group),
       MSE_controlPos = MSE_controlPos,
       MSE_controlNeg = MSE_controlNeg,
       MSE_controlMov = MSE_controlMov,
@@ -215,11 +218,11 @@ graph_evalMetrics <- function(modes = c("GTEM", "procrustes", "RVSSimageJ","PAST
       SSIM_controlPos = SSIM_controlPos,
       SSIM_controlNeg = SSIM_controlNeg,
       SSIM_controlMov = SSIM_controlMov,
-      Eucl_controlPos = 0,
+      Eucl_controlPos = c(0,0,0),
       Eucl_controlNeg = NaN,
       Eucl_controlMov = NaN,
-      RV_controlPos = 1,
-      RV_controlNeg = 0,
+      RV_controlPos = c(1,1,1),
+      RV_controlNeg = c(0,0,0),
       RV_controlMov = NaN
     )
     
@@ -238,7 +241,7 @@ graph_evalMetrics <- function(modes = c("GTEM", "procrustes", "RVSSimageJ","PAST
       RV_transformado = RV_transformado
     )
     
-    # Create a data frame to group the Euclidean distance for each mode, image and landmark
+    # Create a data frame to group the Euclidean distnace for each mode, image and landmark
     landmark_id <- paste0("lmk",seq_along(Evaluation$original[[typeComparison]][[i]]$Eucl_value))
     df_temp <- data.frame(
       image_id = rep(Image, each = length(landmark_id)),
@@ -272,18 +275,30 @@ graph_evalMetrics <- function(modes = c("GTEM", "procrustes", "RVSSimageJ","PAST
     
     # Create a new dataframe for statistics
     stats_df <- data.frame(
-      Parameter = c("Original","Transformed"),
+      Parameter = c("Original","Transformed",
+                    "Original","Transformed",
+                    "Original","Transformed",
+                    "Original","Transformed",
+                    "Original","Transformed"),
       Mean = mean_values,
       SD = sd_values,
       error = error_values,
-      group = c("0 original", paste0(elem, " ", group)),
-      metric = rep(metrics, each = 2)
+      group = c("0 original", paste0(elem, " ", group), 
+                "0 original", paste0(elem, " ", group), 
+                "0 original", paste0(elem, " ", group), 
+                "0 original", paste0(elem, " ", group),
+                "0 original", paste0(elem, " ", group)),
+      metric = c("1 MSE", "1 MSE", 
+                 "2 MSE gray", "2 MSE gray", 
+                 "3 SSIM", "3 SSIM", 
+                 "4 Euclidean", "4 Euclidean",
+                 "5 RV", "5 RV")
     )
     
     # Perform t-tests
     mse_test <- t.test(data_comparison$MSE_original,
-                      data_comparison$MSE_transformado,
-                      paired = TRUE)
+                       data_comparison$MSE_transformado,
+                       paired = TRUE)
     mse_p_value <- mse_test$p.value
     
     mse_gray_test <- t.test(data_comparison$MSE_gray_original,
@@ -302,24 +317,25 @@ graph_evalMetrics <- function(modes = c("GTEM", "procrustes", "RVSSimageJ","PAST
     
     # Groupt the t.test results
     p_values_df <- data.frame(
-      Metric = metrics,
+      Metric = c("1 MSE", "2 MSE Gray", "3 SSIM", "4 Euclidean", "5 RV"),
       P_value = c(mse_p_value, mse_gray_p_value, ssim_p_value, eucl_p_value, RV_p_value)
     )
     
     stats_df$p_value <- NaN
     stats_df$p_value[c(2, 4, 6, 8, 10)] <- c(mse_p_value, mse_gray_p_value, ssim_p_value, eucl_p_value, RV_p_value)
-
+    
     listaStats[[names(listaEvalFiles[elem])]] <- stats_df
     listaControl <- rbind(listaControl,data_control)
   }
-
+  
   # Add the control parameters
-
+  
   # Calculate the mean and standard deviation
   mean_values <- colMeans(listaControl[,c(-1,-2)])  # Ignorar la columna "Image"
   sd_values <- apply(listaControl[,c(-1,-2)], 2, sd)  # Ignorar la columna "Image"
   error_values <- sapply(sd_values, function(x) {x/sqrt(3)})
-
+  
+  
   # "Positive Control","Negative Control","Movement Control",
   # Create a new dataframe for statistics
   stats_df <- data.frame(
@@ -331,26 +347,28 @@ graph_evalMetrics <- function(modes = c("GTEM", "procrustes", "RVSSimageJ","PAST
     metric = rep(metrics, each = 3),
     p_value = NaN
   )
-
+  
   listaStats[["control"]] <- stats_df
-
-  datosEucl_long <- tidyr::pivot_longer(
+    
+  # Linear Mixed Model (LMM) for Euclidean distances  
+  
+  datosEucl_long <- pivot_longer(
     datosEucl,
-    cols = c(control, transformed),
+    cols = c("control", "transformed"),
     names_to  = "condition",
     values_to = "distance"
   )
   # ‘condition’ and ‘method’ as factors
   datosEucl_long$condition <- factor(datosEucl_long$condition, levels = c("control","transformed"))
   datosEucl_long$method    <- factor(datosEucl_long$method)
-
+  
   # Linear Mixed Model
   # distance ~ condition + (1 | image_id) 
   #      (1|image) variability between images
   #      (1 | image_id:landmark_id) variability by landmarks in each image
-
+  
   resultsEucl <- lapply(levels(datosEucl_long$method), function(method_i) {
-    dd <- subset(datosEucl_long, method == method_i)
+    dd <- subset(datosEucl_long, (method == method_i))
     mod <- lmerTest::lmer(
       distance ~ condition + (1 | image_id),
       data = dd)
@@ -364,12 +382,13 @@ graph_evalMetrics <- function(modes = c("GTEM", "procrustes", "RVSSimageJ","PAST
     )
   })
   resultsEucl <- do.call(rbind, resultsEucl)
-
-  for (metric in metrics) {
-    listaStats[[metric]][["Eucl_transformado","p_value"]] <- resultsEucl[resultsEucl$method == metric,"p_value"]
+  
+  for (mode in modes) {
+    listaStats[[mode]][["Eucl_transformado","p_value"]] <- resultsEucl[resultsEucl$method == mode,"p_value"]
   }
-
-
+  
+  # Linear Mixed Model (LMM) for RV values  
+  
   datosRV_long <- tidyr::pivot_longer(
     datosRV,
     cols = c(control, transformed),
@@ -379,12 +398,12 @@ graph_evalMetrics <- function(modes = c("GTEM", "procrustes", "RVSSimageJ","PAST
   # ‘condition’ and ‘method’ as factors
   datosRV_long$condition <- factor(datosRV_long$condition, levels = c("control","transformed"))
   datosRV_long$method    <- factor(datosRV_long$method)
-
+  
   # Linear Mixed Model
   # distance ~ condition + (1 | image_id) 
   #      (1|image) variability between images
   #      (1 | image_id:landmark_id) variability by landmarks in each image
-
+  
   resultsRV <- lapply(levels(datosRV_long$method), function(method_i) {
     dd <- subset(datosRV_long, method == method_i)
     mod <- lmerTest::lmer(
@@ -400,65 +419,76 @@ graph_evalMetrics <- function(modes = c("GTEM", "procrustes", "RVSSimageJ","PAST
     )
   })
   resultsRV <- do.call(rbind, resultsRV)
-
-  for (metric in metrics) {
-    listaStats[[metric]][["RV_transformado","p_value"]] <- resultsRV[resultsRV$method == metric,"p_value"]
+  
+  for (mode in modes) {
+    listaStats[[mode]][["RV_transformado","p_value"]] <- resultsRV[resultsRV$method == mode,"p_value"]
   }
-
-
+  
+  
   # Raw data for boxplots
-  metrics_list <- c("MSE", "MSEgray", "SSIM", "Eucl", "RV")
-
+  metrics_list <- c("MSE", "MSE_gray", "SSIM", "Eucl", "RV")
+  
   data_list <- lapply(metrics_list, function(metric) {
     # 'listaControl'
-    control_data <- unlist(listaControl[, grep(metric, colnames(listaControl))], use.names = FALSE)
+    control_data <- listaControl[, grep(paste0(metric,"_c"), colnames(listaControl))]
     # 'listaDataFrames'
-    model_data <- do.call(c, lapply(listaDataFrames, function(df) df[, grep(metric, colnames(df))]))
-
+    model_data <- do.call(c, lapply(names(listaDataFrames), function(name) {
+      df <- listaDataFrames[[name]]
+      pattern <- if (name == modes[[1]]) paste0(metric, "_(o|t)") else paste0(metric, "_t")
+      df[, grep(pattern, colnames(df)), drop = FALSE]
+    }))
     c(control_data, model_data)
   })
-
+  
   # From list to dataframe
   data <- data.frame(matrix(unlist(data_list), ncol = length(metrics_list), byrow = FALSE))
   colnames(data) <- metrics_list
-
+  
   # Add 'image' and 'metric'
-  images_control <- rep(rownames(listaControl), each = 3)
-  metrics_control <- rep(c("0 1 positive", "0 2 negative", "0 3 movement"), length.out = nrow(listaControl))
-
-  images_models <- rep(names(listaDataFrames), sapply(listaDataFrames, nrow))
-  metrics_models <- metrics
-
+  images_control <- rep(listaControl[,"Image"], 3)
+  metrics_control <- rep(c("0 1 positive", "0 2 negative", "0 3 movement"), each = length(listaControl[,"Image"]))
+  
+  images_models <- rep(listaDataFrames[[1]][,"Image"], length(modes) + 1)
+  metrics_models <- rep(c("1 original", paste0(seq_along(modes) + 1, " ", modes)), each = length(listaDataFrames[[1]][,"Image"]))
+  
   data$image <- c(images_control, images_models)
   data$metric <- as.factor(c(metrics_control, metrics_models))
   data$image <- as.factor(data$image)
-
+  
   # Boxplots graphs
   listGraphs <- list()
   label_list <- c("Positive Control","Negative Control","Original",modes)
-  for (metric in metrics) {
-
+  for (pos in seq_along(metrics)) {
+    metric <- metrics_list[[pos]]
+    
     p_values <- sapply(modes, function(mode) {
-      val <- listaStats[[mode]]$p_value[[metrics[metric]]]
+      val <- listaStats[[mode]]$p_value[pos*2]
       if (is.nan(val)) 1 else val
     })
-
+    
     max_mean <- max(sapply(modes, function(mode) {
-      listaStats[[mode]]$Mean[[metrics[metric] - 1]]
+      listaStats[[mode]]$Mean[pos*2]
     }))
     max_error <- max(sapply(modes, function(mode) {
-      listaStats[[mode]]$error[[metrics[metric] - 1]]
+      listaStats[[mode]]$error[pos*2]
     }))
-
+    
+    comparisons <- lapply(5:(4 + length(modes)), function(i) c(4, i))
+    
     # Define plot limits and y positions
-    if (patientType == "unique") {
-      maxY <- ifelse(metric == "SSIM" || metric == "RV", 1, 2500)
-      y_positions <- seq(0.05 * maxY, 0.45 * maxY, length.out = length(p_values))
-    } else if (patientType == "multiple") {
-      maxY <- ifelse(metric == "SSIM" || metric == "RV", 1, 35000)
-      y_positions <- seq(0.45 * maxY, 0.85 * maxY, length.out = length(p_values))
+    if (metric == "MSE" || metric == "MSE_gray") {
+      if (patientType == "unique") {
+        maxY <- 2500; maxmaxY <- 2500; 
+        y_positions <- c(0.05*maxmaxY,0.15*maxmaxY,0.25*maxmaxY,0.35*maxmaxY,0.45*maxmaxY)
+      } else if (patientType == "multiple") {
+        maxY <- 35000; maxmaxY <- 15000; 
+        y_positions <- c(0.45*maxmaxY,0.55*maxmaxY,0.65*maxmaxY,0.75*maxmaxY,0.85*maxmaxY)
+      }
+    } else {
+      maxY <- ifelse(metric == "SSIM" || metric == "RV", 1, 900) 
+      y_positions <- c(0.5*maxY,0.6*maxY,0.7*maxY,0.8*maxY,0.9*maxY)
     }
-
+    
     # Generate Plot
     plot <- ggplot(data, aes_string(x = "metric", y = metric)) +
       geom_boxplot(aes(fill = metric), outlier.shape = NA) +
@@ -473,23 +503,24 @@ graph_evalMetrics <- function(modes = c("GTEM", "procrustes", "RVSSimageJ","PAST
             axis.title.y = element_text(size = 34),
             legend.position = "none") +
       mapply(function(comp, pval, ypos) {
-        ggsignif::geom_signif(comparisons = list(comp), annotations = sprintf("%.4f", pval), y_position = ypos, 
-                    tip_length = 0.02 / maxY, textsize = 10, color = ifelse(pval <= 0.05, "red", "black"))
+        ggsignif::geom_signif(comparisons = list(comp), 
+                              annotations = sprintf("%.4f", pval), 
+                              y_position = ypos, 
+                              tip_length = 0.02 / maxY, 
+                              textsize = 10, 
+                              color = ifelse(pval <= 0.05, "red", "black"))
       }, comparisons, p_values, y_positions)
-
+    
     # Save Plot
     ggsave(paste0(saveDir, "STIMA_merge_", metric, "_boxplot.png"), plot = plot)
-
-    listaGraphs[[metric]] <- plot
+    
+    listGraphs[[metric]] <- plot
   }
-
-  combined_plot <- gridExtra::grid.arrange(
-    unlist(listaGraphs),
-    ncol = 1, 
-    heights = c(1, 1, 1, 1, 1.6)
-  )
-
+  
+  combined_plot <- gridExtra::grid.arrange(grobs = listGraphs, ncol = 1, heights = c(1, 1, 1, 1, 1))
+  
+  
   # Guarda la figura combinada
   ggsave(paste0(saveDir, "STIMA_combined_boxplot_5.png"), plot = combined_plot, width = 11, height = 40)
-
+  
 }

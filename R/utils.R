@@ -7,6 +7,6 @@
 #' @export
 selectCoord <- function(image) {
   plot(image)
-  coordinates <- locator(type = "p")
+  coordinates <- graphics::locator(type = "p")
   return(coordinates)
 }

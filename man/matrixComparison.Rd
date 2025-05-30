@@ -4,10 +4,16 @@
 \alias{matrixComparison}
 \title{matrixComparison(listaObjAnnot)}
 \usage{
-matrixComparison(listaObjAnnot)
+matrixComparison(
+  listaObjAnnot,
+  cell.types = c("Astrcytes", "Microglia", "OPC", "Endothelial", "Neurons", "Pericytes",
+    "Schwann", "Lymphocytes", "Oligodendrocytes", "Ependymal Cells", "Meninges")
+)
 }
 \arguments{
 \item{listaObjAnnot}{list of objects after deconvolution}
+
+\item{cell.types}{A vector of cell type names to be plotted.}
 }
 \value{
 rv_long A data frame containing the RV coefficients and p-values for the comparison of cell types across different images.

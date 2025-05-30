@@ -7,8 +7,9 @@
 alignmentSTalign(object, patientType = c("unique", "multiple"))
 }
 \arguments{
-\item{object}{first object with the slices/samples merged together
-patientType Type of patient data. Options are 'unique' or 'multiple'.}
+\item{object}{first object with the slices/samples merged together}
+
+\item{patientType}{Type of patient data. Options are 'unique' or 'multiple'.}
 }
 \description{
 alignmentSTalign(object)

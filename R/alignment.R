@@ -49,7 +49,7 @@ solveCoord <- function(coord1, coord2, xmax, ymax) {
   }
   
   xstart <- c(cos(pi/4), sin(pi/4), 2, -2)
-  solution <- optim(xstart, fn)
+  solution <- stats::optim(xstart, fn)
   solution <- solution$par
   names(solution) <- c('coseno', 'seno', 'dx', 'dy')
   solution[["dy"]] <- - solution[["dy"]]
@@ -214,7 +214,7 @@ calcScal <- function(coord1, coord2) {
   }
   
   xstart <- 1
-  solution <- optim(xstart, fn, method = "Brent", lower = 0, upper = 3)
+  solution <- stats::optim(xstart, fn, method = "Brent", lower = 0, upper = 3)
   solution <- solution$par
   names(solution) <- 'e'
   
@@ -377,10 +377,10 @@ STIMA <- function(object, mode = c("GTEM", "procrustes", "RVSSimageJ"), scale = 
         } else if (scale == TRUE) {
           # Store the transformation parameters (angle, scale, and translation values)
           transformsParams <- list()
-          transformsParams["s*cos"] <- as.numeric(transformsS[[1]][1])
-          transformsParams["s*sin"] <- as.numeric(transformsS[[1]][2])  # radianes
-          transformsParams["dx"] <- as.numeric(transformsS[[1]][3]) + as.numeric(transformsT[[1]][1])     # sin relativizar (-1,1)
-          transformsParams["dy"] <- as.numeric(transformsS[[1]][4]) + as.numeric(transformsT[[1]][2])     # sin relativizar (-1,1)
+          transformsParams["s*cos"] <- as.numeric(transformsR[[1]][1])
+          transformsParams["s*sin"] <- as.numeric(transformsR[[1]][2])  # radianes
+          transformsParams["dx"] <- as.numeric(transformsR[[1]][3]) + as.numeric(transformsT[[1]][1])     # sin relativizar (-1,1)
+          transformsParams["dy"] <- as.numeric(transformsR[[1]][4]) + as.numeric(transformsT[[1]][2])     # sin relativizar (-1,1)
           listaSoluciones[[Nimage]] <- transformsParams
         } 
       }

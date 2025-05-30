@@ -8,12 +8,12 @@
 #' @return list containing the coordinates of the selected points with two elements: x and y.
 #' @export
 selectCoordPython <- function(image) {
-  par(mfrow=c(1,1))
+  graphics::par(mfrow=c(1,1))
   plot(c(0,0), xlim=c(0,ncol(image)), ylim=c(0,nrow(image)),
        xlab=NA, ylab=NA, axes = FALSE, asp=1)
-  rasterImage(image, xleft = 0, xright = ncol(image),
+  graphics::rasterImage(image, xleft = 0, xright = ncol(image),
               ytop = 0, ybottom = nrow(image), interpolate = FALSE)
-  coordinates <- imager::locator(type = "p")
+  coordinates <- graphics::locator(type = "p")
   return(coordinates)
 }
 
@@ -28,13 +28,13 @@ selectCoordPython <- function(image) {
 #' @param N Slice number to be rescaled.
 #' @return Data frame with rescaled coordinates.
 escale <- function(object.seurat, new_coords, patientType = c('unique','multiple'), N) {
-  if (patient == "multiple") {
+  if (patientType == "multiple") {
     # Select the max values changed (row = col & col = row)
     newCOLmax <- max(new_coords$imagerow)
     newROWmax <- max(new_coords$imagecol)
     
-    origCOLmax <- max(objSeurat@images[[paste0("slice1.", N)]]@coordinates$imagecol)
-    origROWmax <- max(objSeurat@images[[paste0("slice1.", N)]]@coordinates$imagerow)
+    origCOLmax <- max(object.seurat@images[[paste0("slice1.", N)]]@coordinates$imagecol)
+    origROWmax <- max(object.seurat@images[[paste0("slice1.", N)]]@coordinates$imagerow)
     
     new_coords$imagerow <- new_coords$imagerow / newCOLmax * origCOLmax
     new_coords$imagecol <- new_coords$imagecol / newROWmax * origROWmax
@@ -67,22 +67,22 @@ saveSeurat_forAnnData <- function(object, patientType = c('unique','multiple'), 
     # Expression data = counts
     counts_layer <- object@assays$Spatial@layers[[paste0("counts.", i)]]
     counts_layer_T <- t(counts_layer)
-    write.csv(as.matrix(counts_layer_T), paste0(saveDir,"expression_matrix_slice", i, ".csv"))
+    utils::write.csv(as.matrix(counts_layer_T), paste0(saveDir,"expression_matrix_slice", i, ".csv"))
 
     # Cell metadata 
     if (patientType == "multiple") {
       sample <- samples[i]
       cell_metadata <- object@meta.data[object@meta.data$name == paste0("slice",sample,"_1"), ]
-    } else if (patient == "unique") {
+    } else if (patientType == "unique") {
       sample <- samples[1]
       cell_metadata <- object@meta.data[object@meta.data$name == paste0("slice",sample,"_", i), ]
     }
-    write.csv(cell_metadata, paste0(saveDir, "cell_metadata_slice", i, ".csv"))
+    utils::write.csv(cell_metadata, paste0(saveDir, "cell_metadata_slice", i, ".csv"))
   
     # Spatial coordinates (row, col, imagerow, imagecol)
     image_coords <- object@images[[paste0("slice1.", i)]]@coordinates
     image_coords_df <- as.data.frame(image_coords)  # Convertir en un data.frame
-    write.csv(image_coords_df, paste0(saveDir, "image_coordinates_slice", i, ".csv"))
+    utils::write.csv(image_coords_df, paste0(saveDir, "image_coordinates_slice", i, ".csv"))
     
     #  scale.factors
     scale_factors <- list()
@@ -90,10 +90,10 @@ saveSeurat_forAnnData <- function(object, patientType = c('unique','multiple'), 
     scale_factors$tissue_hires_scalef <- object@images[[paste0("slice1.", i)]]@scale.factors$hires
     scale_factors$spot_diameter_fullres <- object@images[[paste0("slice1.", i)]]@scale.factors$spot
     scale_factors$fiducial_diameter_fullres <- object@images[[paste0("slice1.", i)]]@scale.factors$fiducial
-    write.csv(scale_factors, paste0(saveDir, "scale_factors_slice", i, ".csv"))
+    utils::write.csv(scale_factors, paste0(saveDir, "scale_factors_slice", i, ".csv"))
     
     # Gene metadata (shared for all the slices)
-    write.csv(rownames(object@assays$Spatial@features[which(object@assays$Spatial@features[,i] == TRUE),]), 
+    utils::write.csv(rownames(object@assays$Spatial@features[which(object@assays$Spatial@features[,i] == TRUE),]), 
                 paste0(saveDir, "gene_metadata", i, ".csv"))
   }
 
@@ -120,9 +120,9 @@ PASTE2toSeurat <- function(object, patientType = c('unique','multiple')) {
 
   for (N in Ns) {
     # Load the new coordinates saved and generated as csv files by PASTE2.  
-    new_coordsProb <- read.csv(file = paste0(saveDir, "PASTE2_", N, "_align1", N, "_h_coord.csv"))
+    new_coordsProb <- utils::read.csv(file = paste0(saveDir, "PASTE2_", N, "_align1", N, "_h_coord.csv"))
   
-    new_coordsProb <- escale(new_coordsProb, patient, N, object)
+    new_coordsProb <- escale(new_coordsProb, patientType, N, object)
   
     object@images[[paste0("slice",N)]] <- object@images[[paste0("slice1.", N)]]
     object@images[[paste0("slice", N)]]@coordinates$imagerow <- unlist(new_coordsProb$imagecol)
@@ -187,7 +187,7 @@ calculateEvaluationPython <- function(objeto.seurat, mode = c("STalign", "PASTE2
   }
   saveDir <- paste0("./results/",mode,"/")
   
-  if (modeAbr == "PASTE2") {
+  if (mode == "PASTE2") {
     for (i in seq_along(1:4)) {
       coordenadas <- selectCoordPython(objeto.seurat@images[[paste0("slice1.",i)]]@image)
       for (j in seq_along(coordenadas)) {
@@ -197,7 +197,7 @@ calculateEvaluationPython <- function(objeto.seurat, mode = c("STalign", "PASTE2
     }
   listaCoordenadasNEW <- listaCoordenadas
 
-  } else if (modeAbr == "STalign") {
+  } else if (mode == "STalign") {
     listaCoordenadas <- list()
     for (i in seq_along(1:4)) {
       coordenadas <- selectCoordPython(objeto.seurat@images[[paste0("slice1.",i)]]@image)
@@ -320,7 +320,7 @@ createDeconvolutionListsPython <- function(object.seurat, object,
 #' alignmentSTalign(object)
 #' 
 #' @param object first object with the slices/samples merged together
-#' patientType Type of patient data. Options are 'unique' or 'multiple'.
+#' @param patientType Type of patient data. Options are 'unique' or 'multiple'.
 #' @import reticulate
 #' @export 
 alignmentSTalign <- function(object, patientType = c('unique','multiple')) {
@@ -383,13 +383,13 @@ alignmentSTalign <- function(object, patientType = c('unique','multiple')) {
 
 
   for (i in seq_along(2:length(object@images))) {
-    listSTalignResults[[im]] <- list()
+    listSTalignResults[[i]] <- list()
   
-    prob_image_coords <- object@images[[paste0("slice1.",im)]]@coordinates
+    prob_image_coords <- object@images[[paste0("slice1.",i)]]@coordinates
     prob_pos <- as.data.frame(prob_image_coords)  # Convertir en un data.frame
     prob_barcodes <- rownames(prob_pos)
-    prob_scalefactor <- object@images[[paste0("slice1.",im)]]@scale.factors$lowres
-    prob_image <- object@images[[paste0("slice1.",im)]]@image
+    prob_scalefactor <- object@images[[paste0("slice1.",i)]]@scale.factors$lowres
+    prob_image <- object@images[[paste0("slice1.",i)]]@image
       
     posCalc_prob <- prob_pos[prob_barcodes,5:4] * prob_scalefactor
     colnames(posCalc_prob) <- c("x", "y")
@@ -435,7 +435,7 @@ alignmentSTalign <- function(object, patientType = c('unique','multiple')) {
     posAligned_adapt <- posAligned[prob_barcodes,2:1] / prob_scalefactor
     colnames(posAligned_adapt) <- c("imagerow", "imagecol")
     
-    listSTalignResults[[im]][[transf]][["coords"]] <- posAligned_adapt
+    listSTalignResults[[i]][[transf]][["coords"]] <- posAligned_adapt
   }
 
   # Save the list of aligned images and coordinates

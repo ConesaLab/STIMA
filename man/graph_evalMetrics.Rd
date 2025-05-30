@@ -8,7 +8,7 @@ graph_evalMetrics(
   modes = c("GTEM", "procrustes", "RVSSimageJ", "PASTE2", "STalign"),
   patientType = c("unique", "multiple"),
   colors = c("green", "red", "lightblue", "orange", "pink", "violet", "purple",
-    "mediumpurple", "purple4")
+    "mediumpurple", "purple4", "burlywood", "darkgoldenrod", "saddlebrown")
 )
 }
 \arguments{

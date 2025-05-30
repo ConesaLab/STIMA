@@ -73,7 +73,7 @@ createDeconvolutionLists <- function(object.seurat,
 #' @importFrom spacexr Reference
 createReferenceIfNeeded <- function(reference) {
   if (inherits(reference, "Reference") && 
-      all(c("counts", "cell_types", "nUMI") %in% slotNames(reference1))) {
+      all(c("counts", "cell_types", "nUMI") %in% methods::slotNames(reference))) {
     message("The reference is correctly loaded and structured.")
 
   } else {
@@ -111,7 +111,7 @@ createReferenceIfNeeded <- function(reference) {
 #' @import Seurat
 #' @importFrom Matrix sparseMatrix
 as_AssayObject <- function(object) {
-  if (is(object, "RCTD")) {
+  if (methods::is(object, "RCTD")) {
     if (!requireNamespace("spacexr", quietly = TRUE)) {
       stop("Install spacexr.")
     }
@@ -134,7 +134,7 @@ as_AssayObject <- function(object) {
       swm <- t(swm)
       #swm <- spacexr::normalize_weights(swm)
       #swm <- rbind(swm, max = apply(swm[!rownames(swm) %in% "unassigned", ], 2, max))
-      swm <- as(swm, "sparseMatrix")
+      swm <- methods::as(swm, "sparseMatrix")
       return(Seurat::CreateAssayObject(data = swm))
     }
   } else if (length(r) == 1) {
@@ -153,7 +153,7 @@ as_AssayObject <- function(object) {
 #' @import Seurat
 #' @importFrom Matrix sparseMatrix
 as_AssayObject_complete <- function(object) {
-  if (is(object, "RCTD")) {
+  if (methods::is(object, "RCTD")) {
     if (!requireNamespace("spacexr", quietly = TRUE)) {
       stop("Install spacexr.")
     }
@@ -176,7 +176,7 @@ as_AssayObject_complete <- function(object) {
       swm <- t(swm)
       #swm <- spacexr::normalize_weights(swm)
       #swm <- rbind(swm, max = apply(swm[!rownames(swm) %in% "unassigned", ], 2, max))
-      swm <- as(swm, "sparseMatrix")
+      swm <- methods::as(swm, "sparseMatrix")
       return(Seurat::CreateAssayObject(data = swm))
     }
   } else if (length(r) == 1) {
@@ -197,6 +197,7 @@ as_AssayObject_complete <- function(object) {
 #' @return A list of Seurat objects with deconvolution results added as assays.
 #' @import Seurat
 #' @import spacexr
+#' @import magrittr
 #' @include alignment.R
 #' @export
 deconvolutionRCTD <- function(object.list, reference, im,
@@ -251,7 +252,7 @@ deconvolutionRCTD <- function(object.list, reference, im,
     myRCTD <- spacexr::run.RCTD(myRCTD, doublet_mode = 'multi')
     
     # results
-    assay_myRCTD <- Seurat::as_AssayObject(myRCTD)
+    assay_myRCTD <- as_AssayObject(myRCTD)
     
     object.list[[i]]@assays[["deconvolution.RCTD"]] <- assay_myRCTD
 
@@ -315,8 +316,12 @@ deconvolutionRCTD_mergeFiles <- function(modes = c("GTEM", "procrustes", "RVSSim
 #' Generates a matrix comparison of cell types across different images.
 #' 
 #' @param listaObjAnnot list of objects after deconvolution
+#' @param cell.types A vector of cell type names to be plotted.
 #' @return rv_long A data frame containing the RV coefficients and p-values for the comparison of cell types across different images.
-matrixComparison <- function(listaObjAnnot) {
+matrixComparison <- function(listaObjAnnot,
+                             cell.types = c("Astrcytes", "Microglia", "OPC", "Endothelial", 
+                                            "Neurons", "Pericytes", "Schwann", "Lymphocytes", 
+                                            "Oligodendrocytes", "Ependymal Cells", "Meninges")) {
   # Build empty matrixes
   imageMatrixRef <- data.table::data.table(matrix(numeric(0), ncol = 11))
   imageMatrixNOT <- data.table::data.table(matrix(numeric(0), ncol = 11))
@@ -452,7 +457,7 @@ matrixComparison <- function(listaObjAnnot) {
   
   #sum(imageMatrixRef[complete.cases(imageMatrixRef) & complete.cases(imageMatrixYES)])
   #sum(imageMatrixNOT[complete.cases(imageMatrixNOT) & complete.cases(imageMatrixYES)])
-  shared_groups <- complete.cases(imageMatrixRef) & complete.cases(imageMatrixNOT) & complete.cases(imageMatrixYES)
+  shared_groups <- stats::complete.cases(imageMatrixRef) & stats::complete.cases(imageMatrixNOT) & stats::complete.cases(imageMatrixYES)
   #table(shared_groups)
   
   coeffEV_Ref_NOT <- FactoMineR::coeffRV(imageMatrixRef[shared_groups],
@@ -495,8 +500,8 @@ matrixComparison <- function(listaObjAnnot) {
   #rownames(rvstd_matrix) <- c("Reference", "Original", "Transformed")
   #colnames(rvstd_matrix) <- c("Reference", "Original", "Transformed")
   
-  rv_long <- reshape::melt(rv_matrix, varnames = c("Matrix_A", "Matrix_B"), value.name = "RV")
-  pval_long <- reshape::melt(pval_matrix, varnames = c("Matrix_A", "Matrix_B"), value.name = "p.value")
+  rv_long <- reshape2::melt(rv_matrix, varnames = c("Matrix_A", "Matrix_B"), value.name = "RV")
+  pval_long <- reshape2::melt(pval_matrix, varnames = c("Matrix_A", "Matrix_B"), value.name = "p.value")
   #rvstd_long <- reshape::melt(rvstd_matrix, varnames = c("Matrix_A", "Matrix_B"), value.name = "RVstd")
   
   rv_long <- merge(rv_long, pval_long, by = c("Matrix_A", "Matrix_B"))
@@ -528,19 +533,21 @@ calculateRVcoeff <- function(modes = c("GTEM", "procrustes", "RVSSimageJ"),
   
   patient <- "1"
   print(patient)
+  im <- ""
+  mode <- ""
   results_list <- foreach(mode = modes, 
                           .packages = c("Seurat", "data.table","reshape2")) %:%
-                  foreach(i = ims, 
+                  foreach(im = ims, 
                           .packages = c("Seurat", "data.table","reshape2")) %dopar% {
       cat(mode)
-      cat(i)
-      listaObjAnnot <- readRDS(paste0(saveDir,"objectAligned_merge_",mode,"_list_im",i,".rds"))
+      cat(im)
+      listaObjAnnot <- readRDS(paste0(saveDir,"objectAligned_merge_",mode,"_list_im",im,".rds"))
       
       for (j in 1:length(listaObjAnnot)) {Seurat::DefaultAssay(listaObjAnnot[[j]]) <- "deconvolution.RCTD.complete"; RCTDmode <- "deconvolution.RCTD.complete"}
       
       # calcular
       rvMatrix <- matrixComparison(listaObjAnnot = listaObjAnnot)
-      list(mode = mode, image = i, rv = rvMatrix)
+      list(mode = mode, image = im, rv = rvMatrix)
     }
   
   RV_table <- list()
