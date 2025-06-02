@@ -406,10 +406,10 @@ alignmentSTalign <- function(object, patientType = c('unique','multiple')) {
 
     ## target (problem)
     points_im_prob <- t(data.frame(a = c(coordenadas_im_prob$x[[1]], coordenadas_im_prob$y[[1]]), 
-                                  b = c(coordenadas_im_prob$x[[2]], coordenadas_im_prob$y[[2]]), 
-                                  c = c(coordenadas_im_prob$x[[3]], coordenadas_im_prob$y[[3]]),
-                                  d = c(coordenadas_im_prob$x[[4]], coordenadas_im_prob$y[[4]]),
-                                  e = c(coordenadas_im_prob$x[[5]], coordenadas_im_prob$y[[5]])))
+                                   b = c(coordenadas_im_prob$x[[2]], coordenadas_im_prob$y[[2]]), 
+                                   c = c(coordenadas_im_prob$x[[3]], coordenadas_im_prob$y[[3]]),
+                                   d = c(coordenadas_im_prob$x[[4]], coordenadas_im_prob$y[[4]]),
+                                   e = c(coordenadas_im_prob$x[[5]], coordenadas_im_prob$y[[5]])))
     colnames(points_im_prob) <- c('x', 'y')
 
     points_im_prob_rc <- points_im_prob[,2:1]
@@ -425,7 +425,7 @@ alignmentSTalign <- function(object, patientType = c('unique','multiple')) {
 
     transf <- "affine+diffeo"
 
-    listSTalignResults[[im]][[transf]][["image"]] <- align_image_im_prob
+    listSTalignResults[[i]][[transf]][["image"]] <- align_image_im_prob
   
     posAligned <- align_points_im_prob ## currently in row-col order
     posAligned <- data.frame(posAligned[,2:1]) ## put into x-y order
