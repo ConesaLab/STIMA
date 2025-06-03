@@ -22,9 +22,14 @@ library(STIMA)
 ```{r, eval=FALSE}
 #| label: folder
 # Define the folder where raw data is located
-inputDir <- system.file("extdata", "exampleData", package = "STIMA")
+file_url <- "https://github.com/vagm110901/STIMA-exampleData/raw/refs/heads/master/inst/extdata/exampleData/Paciente19_merge.rds"
+dest_dir <- tempdir()
+dest <- file.path(dest_dir, "Paciente19_merge.rds")
+utils::download.file(file_url, destfile = dest, mode = "wb")
 
-paciente_merge <- readRDS(paste0(inputDir,"/Paciente19_merge.rds"))
+inputDir <- dest_dir
+
+paciente_merge <- readRDS(dest)
 ```
 
 ## Perform the alignment
@@ -72,7 +77,12 @@ Perform the deconvolution.
 ```{r, eval=FALSE}
 #| label: Deconvolution_2
 # Do it for each method and image
-reference <- readRDS(paste0(inputDir,"/snRNA_QC_Yadav.rds"))
+file_url <- "https://github.com/vagm110901/STIMA-exampleData/raw/refs/heads/master/inst/extdata/exampleData/snRNA_QC_Yadav.rds"
+dest_dir <- tempdir()
+dest_ref <- file.path(dest_dir, "snRNA_QC_Yadav.rds")
+utils::download.file(file_url, destfile = dest_ref, mode = "wb")
+
+reference <- readRDS(dest_ref)
 
 paciente_merge_aligned_list_im2 <- readRDS("./results/objectAligned_merge_GTEM_list_im2.rds")
 STIMA::deconvolutionRCTD(paciente_merge_aligned_list_im2, reference, 

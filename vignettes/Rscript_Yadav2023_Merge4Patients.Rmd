@@ -20,7 +20,6 @@ library(dplyr)
 
 # Libraries for embedding tools and HTML content
 library("htmltools")
-library("vembedr")
 
 # Bioconductor manager and hdf5 file handling
 library(BiocManager)
@@ -29,11 +28,30 @@ library(hdf5r)
 # Set a higher memory limit to handle large datasets
 options(future.globals.maxSize = 8000 * 1024^2)
 ```
+
+
 ## Defining input and output directories
 ```{r}
 #| label: files1
-# Define the folder where raw data is located
-inputDir <- system.file("extdata", "exampleData", "GSE222322_RAW", package = "STIMA")
+# Define the folder where raw data is located, download and unzip
+
+listFiles <- list("GSM6919905_V160-CGND-HRA-02636-C.zip","GSM6919907_V161-CGND-HRA-02636-C.zip",
+                  "GSM6919909_V225-CGND-HRC-00022-A.zip","GSM6919917_V229-CGND-HRC-00025-C.zip",
+                  "GSM6919906_V160-CGND-HRA-02636-D.zip","GSM6919908_V161-CGND-HRA-02636-D.zip",
+                  "GSM6919911_V225-CGND-HRC-00023-C.zip")
+dest_dir <- tempdir()
+extract_path <- paste0(dest_dir, "/GSE222322_RAW")
+dir.create(extract_path)
+
+lapply(listFiles, function(file) {
+zip_url <- paste0("https://github.com/vagm110901/STIMA-exampleData/raw/refs/heads/master/inst/extdata/exampleData/GSE222322_RAW/",file)
+destzip <- file.path(extract_path, file)
+utils::download.file(zip_url, destfile = destzip, mode = "wb")
+utils::unzip(destzip, exdir = extract_path)
+file.remove(destzip)
+})
+
+inputDir <- extract_path
 
 # Define the folder where output images or results will be saved
 saveDir <- tempdir()

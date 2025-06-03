@@ -10,3 +10,17 @@ selectCoord <- function(image) {
   coordinates <- graphics::locator(type = "p")
   return(coordinates)
 }
+
+
+#'
+#'
+download_example_data <- function(dest_dir = tempdir()) {
+  zip_url <- "https://github.com/vagm110901/STIMA-data/raw/main/inst/extdata/"
+  destfile <- file.path(dest_dir, "exampleData.zip")
+  
+  utils::download.file(zip_url, destfile, mode = "wb")
+  
+  utils::unzip(destfile, exdir = dest_dir)
+  
+  return(dest_dir)
+}
