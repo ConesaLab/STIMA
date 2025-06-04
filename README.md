@@ -5,18 +5,19 @@
 
 <!-- badges: end -->
 
-STIMA (Spatial Transcriptomics Image-based Methods for Alignment), is
-designed to align two or more ST slices or samples, enabling the
-comparison and analysis of gene expression within the same regions.
-STIMA performs alignment in a pairwise comparison manner, considering
-one slice as a reference, which includes both the tissue microscope
-image and the spatial spot matrix of gene expression. However, STIMA
-relies exclusively on image data for alignment without incorporating
-gene expression data, thereby preserving the independence of
-transcriptomic information across samples. STIMA includes three distinct
-alignment approaches—Geometric Transformation Estimation Model (GTEM),
-Procrustes Transformation and the ImageJ plugin Register Virtual Stack
-Slices (RVSS-ImageJ).
+[**STIMA**](https://github.com/vagm110901/STIMA) (*Spatial
+Transcriptomics Image-based Methods for Alignment*), is designed to
+align two or more ST slices or samples, enabling the comparison and
+analysis of gene expression within the same regions. STIMA performs
+alignment in a pairwise comparison manner, considering one slice as a
+reference, which includes both the tissue microscope image and the
+spatial spot matrix of gene expression. However, STIMA relies
+exclusively on image data for alignment without incorporating gene
+expression data, thereby preserving the independence of transcriptomic
+information across samples. STIMA includes three distinct alignment
+approaches—**Geometric Transformation Estimation Model (GTEM)**,
+**Procrustes Transformation** and **the ImageJ plugin Register Virtual
+Stack Slices (RVSS-ImageJ)**.
 
 ## Installation
 
@@ -24,18 +25,20 @@ You can install STIMA from [GitHub](https://github.com/) with:
 
 ``` r
 # install.packages("remotes")
-remotes::install_git("https://github.com/vagm110901/STIMA.git")
+remotes::install_github("vagm110901/STIMA")
 ```
 
 ⚠️ WARNING: If, during the installation of STIMA, R asks to update some
-packages to their latest versions, proceed with caution. STIMA has been
-developed to work with Seurat version 5.0.2 and not newer versions, as
-significant changes were introduced in the way Spatial Transcriptomics
-data is read. The semla package was used in version 1.3.1, and spacexr
-in version 2.2.1. If you encounter issues with any other packages in
-their latest versions, consider reverting to an earlier version to
-ensure STIMA functions correctly. For development, R version 4.3.2 or
-earlier was used.
+packages to their latest versions, proceed with caution.
+
+STIMA has been developed to work with Seurat version 5.0.2 and not newer
+versions, as significant changes were introduced in the way Spatial
+Transcriptomics data is read. The semla package was used in version
+1.3.1, and spacexr in version 2.2.1. If you encounter issues with any
+other packages in their latest versions, consider reverting to an
+earlier version to ensure STIMA functions correctly.
+
+For development, R version 4.3.2 or earlier was used.
 
 ## Documentation
 
@@ -54,3 +57,13 @@ functionality of the package:
   Instructions on how to load and merge multiple 10x Visium ST samples
   from different patients into a single Seurat object for STIMA
   alignment.
+
+The data used to replicate the vignettes originate from [Yadav et
+al. (2023)](https://doi.org/10.1016/j.neuron.2023.01.007). To access the
+data used in this package, you can visit the repository
+[STIMA-exampleData](https://github.com/vagm110901/STIMA-exampleData), or
+download the raw files directly from the Gene Expression Omnibus (GEO)
+under the accession numbers
+<GEO:%5BGSE190442%5D(http://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE190442>)
+and
+<GEO:%5BGSE222322%5D(http://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE222322>).
