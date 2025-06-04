@@ -24,12 +24,14 @@ Stack Slices (RVSS-ImageJ)**.
 You can install STIMA from [GitHub](https://github.com/) with:
 
 ``` r
-# install.packages("remotes")
+#install.packages("remotes")
 remotes::install_github("vagm110901/STIMA")
 ```
 
-⚠️ WARNING: If, during the installation of STIMA, R asks to update some
-packages to their latest versions, proceed with caution.
+\#⚠️ WARNING:
+
+If, during the installation of STIMA, R asks to update some packages to
+their latest versions, proceed with caution.
 
 STIMA has been developed to work with Seurat version 5.0.2 and not newer
 versions, as significant changes were introduced in the way Spatial
@@ -40,7 +42,21 @@ earlier version to ensure STIMA functions correctly.
 
 For development, R version 4.3.2 or earlier was used.
 
+### Renv
+
+If you are familiar with
+[renv](https://rstudio.github.io/renv/index.html), you can install all
+necessary R packages (with exact versions) with the `renv.lock` file
+provided.
+
+``` r
+#install.packages("renv")
+renv::restore()
+```
+
 ## Documentation
+
+### Vignettes
 
 STIMA provides the following vignettes to better understand the
 functionality of the package:
@@ -58,12 +74,14 @@ functionality of the package:
   from different patients into a single Seurat object for STIMA
   alignment.
 
+### Example Data
+
 The data used to replicate the vignettes originate from [Yadav et
 al. (2023)](https://doi.org/10.1016/j.neuron.2023.01.007). To access the
 data used in this package, you can visit the repository
 [STIMA-exampleData](https://github.com/vagm110901/STIMA-exampleData), or
 download the raw files directly from the Gene Expression Omnibus (GEO)
-under the accession numbers
-<GEO:%5BGSE190442%5D(http://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE190442>)
-and
-<GEO:%5BGSE222322%5D(http://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE222322>).
+under the accession numbers GEO:
+[GSE190442](http://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE190442)
+and GEO:
+[GSE222322](http://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE222322).
