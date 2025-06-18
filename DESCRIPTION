@@ -1,7 +1,7 @@
 Package: STIMA
 Type: Package
 Title: Spatial Transcriptomics Image-based Methods for Alignment
-Version: 0.1.1
+Version: 0.1.2
 Authors@R: 
     person("Víctor A.", "Gaya-Martín",
            email = "vagayam11@gmail.com", 
