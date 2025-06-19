@@ -306,7 +306,7 @@ STIMA <- function(object, mode = c("GTEM", "procrustes", "RVSSimageJ"), scale = 
     CoordinatesSemlaCol <- list(semla::GetCoordinates(object.semla)[which(semla::GetCoordinates(object.semla)["sampleID"] == 1), 2])
     CoordinatesSemlaRow <- list(semla::GetCoordinates(object.semla)[which(semla::GetCoordinates(object.semla)["sampleID"] == 1), 3])
     
-    cat("Saving the images from the RDS file into a source_dir folder.")
+    cat("\n\nSaving the images from the RDS file into a source_dir folder.\n")
     # Define source and target directories for ImageJ alignment
     source_dir <- paste0(getwd(),"/original")
     target_dir <- paste0(getwd(),"/aligned")
@@ -322,11 +322,11 @@ STIMA <- function(object, mode = c("GTEM", "procrustes", "RVSSimageJ"), scale = 
     
     # Provide instructions for the manual alignment process in ImageJ
     cat(paste("\n**Now, it's time to open ImageJ and do the alignment of the images.**\n",
-              "\nFirst, go to |File>Open| and select the different images to align.",
+              "\nFirst, go to \n\tFile>Open\nand select the different images to align.",
               "\nThe images should have only one color channel.",
-              "To do this you should go to |Image>Color>SplitChannels| and then |Image>Color>MergeChannels| unselecting <create composite>.",
-              "\nTo do the align go to |Plugins>Registration>RegisterVirtualStackSlices|.", 
-              "*Remember you should save the transforms.*",
+              "\nTo do this you should go to \n\tImage>Color>SplitChannels\nand then \n\tImage>Color>MergeChannels\nunselecting \n\t<create composite>.",
+              "\nTo do the align go to \n\tPlugins>Registration>RegisterVirtualStackSlices.", 
+              "\n*Remember you should save the transforms.*",
               "\nThe transformation parameters or Transform files should be stored in the same folder as the result images.",
               "\nAnd finally you have to select the reference image.\n"))
     
@@ -604,7 +604,7 @@ STIMA <- function(object, mode = c("GTEM", "procrustes", "RVSSimageJ"), scale = 
 
   # Iterate over each image in the dataset (starting from the second image)
   for (i in seq_along(object.semla@tools$Staffli@rasterlists$raw)) { if (i != refpos) {
-    
+
     if (mode == "GTEM" ) {
       if (scale == TRUE) {
         # Up to this point, TR has been applied correctly, 
@@ -624,6 +624,12 @@ STIMA <- function(object, mode = c("GTEM", "procrustes", "RVSSimageJ"), scale = 
       valores <- listaValores[[i]]
 
     } else if (mode == "RVSSimageJ") {
+
+      xmax <- min(nrow(object.semla@tools$Staffli@rasterlists$raw[[1]]),
+                  nrow(object.semla@tools$Staffli@rasterlists$raw[[i]]))
+      ymax <- min(ncol(object.semla@tools$Staffli@rasterlists$raw[[1]]),
+                  ncol(object.semla@tools$Staffli@rasterlists$raw[[i]]))
+
       if (scale == FALSE) {
         # Retrieve and convert transformation parameters
         solucion <- listaSoluciones[[i]]
