@@ -259,7 +259,7 @@ resultProcrustes <- function(proc, mirrorx, mirrory, scale) {
   return(solucion)
 }
   
-#' STIMA(object, mode, scale)
+#' STIMA(object, mode, scale, refIm)
 #' 
 #' @param object A Seurat object with merged slices/samples containing spatial and image data.
 #' @param mode Character. Alignment mode to use. One of "GTEM", "procrustes", or "RVSSimageJ".
@@ -267,6 +267,7 @@ resultProcrustes <- function(proc, mirrorx, mirrory, scale) {
 #'   - "procrustes": Uses Procrustes analysis with optional scaling.
 #'   - "RVSSimageJ": Uses ImageJ Register Virtual Stack Slices plugin for manual alignment.
 #' @param scale Logical. Whether to compute scaling during alignment (only applies to "procrustes" and "RVSSimageJ" modes).
+#' @param refIm Character, Name of the reference image for the alignment.
 #'
 #' @return A Seurat object updated with alignment transformations.
 #' 
@@ -275,13 +276,15 @@ resultProcrustes <- function(proc, mirrorx, mirrory, scale) {
 #' @import Seurat
 #' @include utils.R
 #' @export
-STIMA <- function(object, mode = c("GTEM", "procrustes", "RVSSimageJ"), scale = FALSE) {
+STIMA <- function(object, mode = c("GTEM", "procrustes", "RVSSimageJ"), scale = FALSE, refIm = "slice1.1") {
   mode <- match.arg(mode) 
 
   if (!dir.exists("./results/")) {
     dir.create("./results/", recursive = TRUE)
   }
   saveDir <- "./results/"
+
+  refpos <- which(names(object@images) == refIm)
 
   x_dims <- sapply(object@images, function(img) { dim(img)[[1]] })
 
@@ -294,8 +297,8 @@ STIMA <- function(object, mode = c("GTEM", "procrustes", "RVSSimageJ"), scale = 
 
   if (mode == "RVSSimageJ") {
     # Set up lists for alignment process and coordinate retrieval
-    aligned <- list(object.semla@tools$Staffli@rasterlists$raw[[1]])
-    original <- list(object.semla@tools$Staffli@rasterlists$raw[[1]])
+    aligned <- list(object.semla@tools$Staffli@rasterlists$raw[[refpos]])
+    original <- list(object.semla@tools$Staffli@rasterlists$raw[[refpos]])
     listaSoluciones <- list(NA)
     listaTransforms <- list(NA)
     
@@ -303,29 +306,27 @@ STIMA <- function(object, mode = c("GTEM", "procrustes", "RVSSimageJ"), scale = 
     CoordinatesSemlaCol <- list(semla::GetCoordinates(object.semla)[which(semla::GetCoordinates(object.semla)["sampleID"] == 1), 2])
     CoordinatesSemlaRow <- list(semla::GetCoordinates(object.semla)[which(semla::GetCoordinates(object.semla)["sampleID"] == 1), 3])
     
-    "
-    This is the point where you would save the images from the RDS file into a source_dir folder, 
-    create a target_dir folder, and then use ImageJ with the Register Virtual Stack Slices plugin for alignment.
-    "
-    
+    cat("Saving the images from the RDS file into a source_dir folder.")
     # Define source and target directories for ImageJ alignment
-    source_dir <- paste0("./original")
-    target_dir <- paste0("./aligned")
-    #ref_name <- "original"
-    ref_name <- "tissue_lowres_image_1"
+    source_dir <- paste0(getwd(),"/original")
+    target_dir <- paste0(getwd(),"/aligned")
+    saveImages(object, source_dir, format = "tif")
+
+    if (!dir.exists(target_dir)) {
+    dir.create(target_dir, recursive = TRUE)}
+
     
     # Instructions for folder setup before alignment
-    cat(paste("\n\nYou should have created in this directory a folder called: ", source_dir,
-              "\nAnd a folder called: ", target_dir,
-              "\nIn the first one, you should have the images from de rds document.\n"))
+    cat(paste("\n\nYou should have a folder called: ",source_dir,"with the images from de RDS document.", 
+              "\nAnd a folder called: ",target_dir,"where the ImageJ alined images will be stored.\n\n"))
     
     # Provide instructions for the manual alignment process in ImageJ
-    cat(paste("\nIt is time to open ImageJ and do the alignment of the images.",
-              "\nFirst, go to File>Open and select the different images to align.",
-              "The images should have only one color channel.",
-              "To do this you should go to Image>Color>Split Channels and then Image>Color>Merge Channels unselecting create composite.",
-              "\nTo do the align go to Plugins>Registration>Register Virtual Stack Slices.", 
-              "Remember you should save the transforms.",
+    cat(paste("\n**Now, it's time to open ImageJ and do the alignment of the images.**\n",
+              "\nFirst, go to |File>Open| and select the different images to align.",
+              "\nThe images should have only one color channel.",
+              "To do this you should go to |Image>Color>SplitChannels| and then |Image>Color>MergeChannels| unselecting <create composite>.",
+              "\nTo do the align go to |Plugins>Registration>RegisterVirtualStackSlices|.", 
+              "*Remember you should save the transforms.*",
               "\nThe transformation parameters or Transform files should be stored in the same folder as the result images.",
               "\nAnd finally you have to select the reference image.\n"))
     
@@ -346,7 +347,7 @@ STIMA <- function(object, mode = c("GTEM", "procrustes", "RVSSimageJ"), scale = 
     Nimage <- 1
     for (xml in files_xml) {
       # Skip the reference image file and process each alignment XML file
-      if (!startsWith(xml, ref_name)) {
+      if (!startsWith(xml, refIm)) {
         Nimage <- Nimage + 1
         lines <- readLines(paste0(target_dir, "/", xml))
         lines <- lines[startsWith(lines, "\t<iict_transform")]
@@ -388,7 +389,7 @@ STIMA <- function(object, mode = c("GTEM", "procrustes", "RVSSimageJ"), scale = 
   } else if (mode == "GTEM" | mode == "procrustes") {
     
     # Select and round the coordinates from the reference image (first sample)
-    coordenadas1 <- selectCoord(object.semla@tools$Staffli@rasterlists$raw[[1]])
+    coordenadas1 <- selectCoord(object.semla@tools$Staffli@rasterlists$raw[[refpos]])
     for (j in seq_along(coordenadas1)) {
       coordenadas1[[j]] <- round(coordenadas1[[j]])
     }
@@ -398,20 +399,22 @@ STIMA <- function(object, mode = c("GTEM", "procrustes", "RVSSimageJ"), scale = 
     # Initialize lists for storing image data, coordinates, transformations, and other parameters
     aligned <- list(object.semla@tools$Staffli@rasterlists$raw[[1]])
     original <- list(object.semla@tools$Staffli@rasterlists$raw[[1]])
-    listaCoordenadas <- list(coordenadas1)
+    listaCoordenadas <- list()
+    listaCoordenadas[[refpos]] <- coordenadas1
     listaSoluciones <- list(NA)
     listaOpciones <- list(NA)
     listaOpcionesCalc <- list(NA)
     listaValores <- list(NA)
     listaTransforms <- list(NA)
-    listaCoordenadasNEW <- list(coordenadas1)
+    listaCoordenadasNEW <- list()
+    listaCoordenadasNEW[[refpos]] <- coordenadas1
 
     # Extract column and row coordinates for the first sample
     CoordinatesSemlaCol <- list(GetCoordinates(object.semla)[which(GetCoordinates(object.semla)["sampleID"] == 1), 2])
     CoordinatesSemlaRow <- list(GetCoordinates(object.semla)[which(GetCoordinates(object.semla)["sampleID"] == 1), 3])
   
     # Iterate through each image starting from the second sample
-    for (i in 2:length(object.semla@tools$Staffli@rasterlists$raw)) {
+    for (i in seq_along(object.semla@tools$Staffli@rasterlists$raw)) { if (i != refpos) {
       # Select and round coordinates for the current image
       coordenadas2 <- selectCoord(object.semla@tools$Staffli@rasterlists$raw[[i]])
       for (j in seq_along(coordenadas2)) {
@@ -534,9 +537,9 @@ STIMA <- function(object, mode = c("GTEM", "procrustes", "RVSSimageJ"), scale = 
       # Select the transformation option with the lowest sum of squares
         
       # Calculate the minimum dimensions between the reference image and the current image
-      xmax <- min(nrow(object.semla@tools$Staffli@rasterlists$raw[[1]]),
+      xmax <- min(nrow(object.semla@tools$Staffli@rasterlists$raw[[refpos]]),
                   nrow(object.semla@tools$Staffli@rasterlists$raw[[i]]))
-      ymax <- min(ncol(object.semla@tools$Staffli@rasterlists$raw[[1]]),
+      ymax <- min(ncol(object.semla@tools$Staffli@rasterlists$raw[[refpos]]),
                   ncol(object.semla@tools$Staffli@rasterlists$raw[[i]]))
       
       # Calculate transformation parameters for each option
@@ -596,17 +599,17 @@ STIMA <- function(object, mode = c("GTEM", "procrustes", "RVSSimageJ"), scale = 
           coordNEW$y <- round(coordNEWmatrix[,2])
           listaCoordenadasNEW[[i]] <- coordNEW 
       }
-    }
+    }}
   }
 
   # Iterate over each image in the dataset (starting from the second image)
-  for (i in 2:length(object.semla@tools$Staffli@rasterlists$raw)) {
+  for (i in seq_along(object.semla@tools$Staffli@rasterlists$raw)) { if (i != refpos) {
     
     if (mode == "GTEM" ) {
       if (scale == TRUE) {
         # Up to this point, TR has been applied correctly, 
         # now it will be calculated if any scaling modifications would be necessary.
-        valueScal <- round(calcScal(listaCoordenadas[[1]], listaCoordenadasNEW[[i]]),2) 
+        valueScal <- round(calcScal(listaCoordenadas[[refpos]], listaCoordenadasNEW[[i]]),2) 
         if (valueScal != 1) {
           listaCoordenadasNEW[[i]][['x']] <- listaCoordenadasNEW[[i]][['x']] * valueScal
           listaCoordenadasNEW[[i]][['y']] <- listaCoordenadasNEW[[i]][['y']] * valueScal
@@ -740,7 +743,7 @@ STIMA <- function(object, mode = c("GTEM", "procrustes", "RVSSimageJ"), scale = 
     # Save transformed coordinates for each sample
     CoordinatesSemlaCol[[i]] <- semla::GetCoordinates(object.semla)[which(semla::GetCoordinates(object.semla)[6] == i), 4]
     CoordinatesSemlaRow[[i]] <- semla::GetCoordinates(object.semla)[which(semla::GetCoordinates(object.semla)[6] == i), 5]
-  }
+  }}
 
   # Update transformed image list in Seurat object
   object.semla@tools$Staffli@rasterlists[["transformed"]] <- aligned

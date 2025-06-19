@@ -6,7 +6,12 @@
 \alias{STIMA}
 \title{STIMA}
 \usage{
-STIMA(object, mode = c("GTEM", "procrustes", "RVSSimageJ"), scale = FALSE)
+STIMA(
+  object,
+  mode = c("GTEM", "procrustes", "RVSSimageJ"),
+  scale = FALSE,
+  refIm = "slice1.1"
+)
 }
 \arguments{
 \item{object}{A Seurat object with merged slices/samples containing spatial and image data.}
@@ -19,6 +24,8 @@ STIMA(object, mode = c("GTEM", "procrustes", "RVSSimageJ"), scale = FALSE)
 }}
 
 \item{scale}{Logical. Whether to compute scaling during alignment (only applies to "procrustes" and "RVSSimageJ" modes).}
+
+\item{refIm}{Character, Name of the reference image for the alignment.}
 }
 \value{
 A Seurat object updated with alignment transformations.

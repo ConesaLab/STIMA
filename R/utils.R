@@ -12,16 +12,15 @@ selectCoord <- function(image) {
   return(coordinates)
 }
 
-#'cropImage(object, image_name, padding = 10)
+#' cropImage(object, image_name, padding = 10)
 #'
-#' This function crops a square region from a spatial image within a Seurat object,
+#' Crops a square region from a spatial image within a Seurat object,
 #' centered around the tissue coordinates, with optional padding. The cropped image and 
 #' corresponding coordinates are rescaled and updated in the object.
 #'
 #' @param object A Seurat object containing spatial image data in the \code{@images} slot.
 #' @param image_name A character string indicating the name of the image within the Seurat object to crop.
 #' @param padding An integer specifying how many pixels of padding to add around the tissue region (default is 10).
-#'
 #' @return A modified Seurat object with the specified image cropped and updated.
 #' @export
 cropImage <- function(object, image_name, padding = 10) {
@@ -83,7 +82,55 @@ cropImage <- function(object, image_name, padding = 10) {
   return(object)
 }
 
+#' saveImages(object, out_dir = paste0(getwd(),"/original", format = c("tif","png"))
+#' 
+#' Extracts spatial images from a Seurat object (specifically from `object@images`) 
+#' and saves them as `.tif` files in the specified output directory.
+#'
+#' @param object A Seurat object containing spatial image data.
+#' @param out_dir Character. Path to the output directory where the images will be saved.
+#'   Defaults to a folder named `"original"` in the current working directory.
+#' @param format Save format TIFF or PNG.
+#' @param name Image save name. If not included, the save name wll be the image name in the Seurat object.
+#' @return No return value. This function is used for its side effect: saving `.tif` or `.png` images to disk.
+#' @importFrom tiff writeTIFF
+#' @importFrom png writePNG
+#' @export
+saveImages <- function(object, out_dir = paste0(getwd(),"/original"), format = c("tif","png"), name = NULL) {
+  format <- match.arg(format)
+  
+  if (!dir.exists(out_dir)) {
+    dir.create(out_dir, recursive = TRUE)}
+  
+  if (length(object@images) == 0) {
+    stop("Incorrect spatial Seurat object. There is not images.")}
+  
+  for (img_name in names(object@images)) {
+    save_name <- ifelse(!is.null(name), name, img_name)
+    cat("Saving image:", img_name, " as ", save_name, "\n")
+    img_object <- object@images[[img_name]]
+  
+    # Image as matrix (ej. RGB o grises)
+    if ("image" %in% slotNames(img_object)) {
+      img_matrix <- img_object@image
+    } else {
+      warning(paste("Image is not available in", img_name))
+      next}
+  
+    # Check the image type
+    if (!is.array(img_matrix)) {
+      img_matrix <- as.array(img_matrix)}
 
+    output_path <- file.path(out_dir, paste0(save_name,".",format))
+  
+    if (format == "tif") { 
+      tiff::writeTIFF(img_matrix, output_path)
+    } else if (format == "png") { 
+      png::writePNG(img_matrix, output_path) 
+    }
+  }
+  cat("Images saved in:", normalizePath(out_dir), "\n")
+}
 
 #' download_example_data(dest_dir = tempdir())
 #'

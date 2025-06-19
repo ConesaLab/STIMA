@@ -29,6 +29,8 @@ Imports:
     doParallel,
     parallel,
     jpeg,
+    png,
+    tiff,
     FactoMineR,
     lmerTest,
     cowplot,

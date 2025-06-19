@@ -97,7 +97,7 @@ saveSeurat_forAnnData <- function(object, patientType = c('unique','multiple'), 
                 paste0(saveDir, "gene_metadata", i, ".csv"))
   }
 
-  cat("Images for each slice have been manually copied from the original directory in the directory: ", saveDir, "\n")
+  saveImages(object, out_dir = saveDir, format = "png", name = "spatial_image_slice")
 }
 
 #' seurat2pythonCommunication

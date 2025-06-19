@@ -17,7 +17,7 @@ cropImage(object, image_name, padding = 10)
 A modified Seurat object with the specified image cropped and updated.
 }
 \description{
-This function crops a square region from a spatial image within a Seurat object,
+Crops a square region from a spatial image within a Seurat object,
 centered around the tissue coordinates, with optional padding. The cropped image and
 corresponding coordinates are rescaled and updated in the object.
 }
