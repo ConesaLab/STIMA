@@ -18,7 +18,7 @@ library(STIMA)
 ```
 
 
-## Defining input directory
+## Input data: download from example repository (STIMA-exampleData)
 ```{r, eval=FALSE}
 #| label: folder
 # Define the folder where raw data is located
@@ -32,14 +32,42 @@ inputDir <- dest_dir
 paciente_merge <- readRDS(dest)
 ```
 
+## Crop the images to center the sequenced tissue region (OPTIONAL)
+```{r, eval=FALSE}
+#| label: crop
+image_names <- names(paciente_merge@images)
+paciente_merge_crop <- paciente_merge
+for (img_name in image_names) {
+  paciente_merge_crop <- STIMA::cropImage(paciente_merge_crop,
+                                          img_name)
+}
+```
+
+## Compare the crop
+You can employ either the cropped or the original spatial object to perform the alignment.
+We can visualize the cropped results to evaluate which is better. 
+In some cases, getting the tissue delimited can improve the aligned results and makes easy the landmarks selection.
+```{r, eval=FALSE}
+SpatialPlot(object = paciente_merge, images = names(paciente_merge@images), 
+            features = "percent.butterfly", alpha = 1, crop = FALSE, ncol = length(paciente_merge@images),
+            pt.size.factor = 1) & 
+  theme(legend.position = "none", plot.title = element_blank())
+
+SpatialPlot(object = paciente_merge_crop, images = names(paciente_merge_crop@images), 
+            features = "percent.butterfly", alpha = 1, crop = FALSE, ncol = length(paciente_merge_crop@images),
+            pt.size.factor = 1) & 
+  theme(legend.position = "none", plot.title = element_blank())
+``` 
+
 ## Perform the alignment
 ```{r, eval=FALSE}
 #| label: STIMA_1
-listAlignedGTEM <- STIMA::STIMA(paciente_merge, mode = "GTEM", scale = FALSE)
-listAlignedprocrustes <- STIMA::STIMA(paciente_merge, mode = "procrustes", scale = FALSE)
-listAlignedRVSSimageJ <- STIMA::STIMA(paciente_merge, mode = "RVSSimageJ", scale = FALSE)
+listAlignedGTEM       <- STIMA::STIMA(paciente_merge_crop, mode = "GTEM", scale = FALSE)
+listAlignedprocrustes <- STIMA::STIMA(paciente_merge_crop, mode = "procrustes", scale = FALSE)
+listAlignedRVSSimageJ <- STIMA::STIMA(paciente_merge_crop, mode = "RVSSimageJ", scale = FALSE)
 ```
 
+You can load the aligned objects to the R enviroment.
 ```{r, eval=FALSE}
 #| label: data
 listAlignedGTEM <- readRDS(paste0(inputDir,"/results/objectAligned_merge_GTEM.rds"))
@@ -52,6 +80,67 @@ paciente_merge_aligned <- listAlignedGTEM$alignedObj
 listCoordinates <- listAlignedGTEM$listCoord
 listCoordinatesNew <- listAlignedGTEM$listCoordNew
 ```
+
+## Visualize the alignment
+```{r, eval=FALSE}
+SpatialPlot(object = paciente_merge, images = names(paciente_merge@images),
+            features = "percent.butterfly", alpha = 1, crop = FALSE, ncol = length(paciente_merge@images),
+            pt.size.factor = 1) &
+  theme(legend.position = "none", plot.title = element_blank())
+
+alignedIms <- names(paciente_merge_aligned@images)[which(!(names(paciente_merge_aligned@images) %in% names(paciente_merge@images)))]
+SpatialPlot(object = paciente_merge_aligned, images = alignedIms, 
+            features = "percent.butterfly", alpha = 1, crop = FALSE, ncol = length(alignedIms),
+            pt.size.factor = 1) & 
+  theme(legend.position = "none", plot.title = element_blank())
+```
+
+## Recommended plots
+```{r, eval=FALSE}
+# Plot the 'percent.butterfly' visualization
+alignedIms <- names(paciente_merge_aligned@images)[which(!(names(paciente_merge_aligned@images) %in% names(paciente_merge@images)))]
+pmt <- SpatialPlot(object = paciente_merge_aligned, images = alignedIms, 
+                   features = "percent.butterfly", alpha = 1, crop = FALSE, ncol = length(alignedIms),
+                   pt.size.factor = 1) & 
+  theme(legend.position = "none", plot.title = element_blank())
+ggsave(paste0(saveDir, "/results/objectAligned_merge_",mode,"_genesButterfly_trans.png"), plot = pmt)
+
+pmt_orig <- SpatialPlot(object = paciente_merge_aligned, images = names(paciente_merge@images), 
+                        features = "percent.butterfly", alpha = 1, crop = FALSE, ncol = length(paciente_merge@images),
+                        pt.size.factor = 1) & 
+  theme(legend.position = "none", plot.title = element_blank())
+ggsave(paste0(saveDir, "/results/objectAligned_merge_orig_genesButterfly.png"), plot = pmt_orig)
+
+
+# Plot the sequenced region
+palign <- SpatialDimPlot(paciente_merge_aligned, alpha = 0.5, crop = FALSE, ncol = length(alignedIms),
+                         images = alignedIms,
+                         pt.size.factor = 1) & 
+  theme(legend.position = "none")
+ggsave(paste0(saveDir, "/results/objectAligned_merge_",mode,"_region.png"), plot = palign)
+
+porig <- SpatialDimPlot(paciente_merge_aligned, alpha = 0.5, crop = FALSE, ncol = length(paciente_merge@images),
+                        images = names(paciente_merge@images),
+                        pt.size.factor = 1) & 
+  theme(legend.position = "none")
+ggsave(paste0(saveDir, "/results/objectAligned_merge_orig_region.png"), plot = porig)
+
+
+# Plot the images
+palign <- SpatialDimPlot(paciente_merge_aligned, alpha = 0, crop = FALSE, ncol = length(alignedIms),
+                         images = alignedIms,
+                         pt.size.factor = 1) & 
+  theme(legend.position = "none", plot.title = element_blank())
+ggsave(paste0(saveDir, "/results/objectAligned_merge_",mode,".png"), plot = palign)
+
+porig <- SpatialDimPlot(paciente_merge_aligned, alpha = 0, crop = FALSE, ncol = length(paciente_merge@images),
+                        images = names(paciente_merge@images),
+                        pt.size.factor = 1) & 
+  theme(legend.position = "none", plot.title = element_blank())
+ggsave(paste0(saveDir, "/results/objectAligned_merge_orig.png"), plot = porig)
+
+```
+
 
 ## Evaluation of the alignment
 ```{r, eval=FALSE}
