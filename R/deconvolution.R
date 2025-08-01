@@ -323,9 +323,10 @@ matrixComparison <- function(listaObjAnnot,
                                             "Neurons", "Pericytes", "Schwann", "Lymphocytes", 
                                             "Oligodendrocytes", "Ependymal Cells", "Meninges")) {
   # Build empty matrixes
-  imageMatrixRef <- data.table::data.table(matrix(numeric(0), ncol = 11))
-  imageMatrixNOT <- data.table::data.table(matrix(numeric(0), ncol = 11))
-  imageMatrixYES <- data.table::data.table(matrix(numeric(0), ncol = 11))
+  numCol <- length(cell.types)
+  imageMatrixRef <- data.table::data.table(matrix(numeric(0), ncol = numCol))
+  imageMatrixNOT <- data.table::data.table(matrix(numeric(0), ncol = numCol))
+  imageMatrixYES <- data.table::data.table(matrix(numeric(0), ncol = numCol))
   data.table::setnames(imageMatrixRef, cell.types)  
   data.table::setnames(imageMatrixNOT, cell.types)  
   data.table::setnames(imageMatrixYES, cell.types)  
