@@ -74,6 +74,29 @@ functionality of the package:
   from different patients into a single Seurat object for STIMA
   alignment.
 
+### Additional useful information and tips
+
+- It is recommended to use the **filtered H5 files** rather than the raw
+  ones.
+- If you crop the data and images before alignment, ensure that the
+  tissue region containing gene expression information is correctly
+  selected. Otherwise, the crop will be inaccurate, and the resulting
+  tissue section could appear smaller than it actually is.
+- After performing the alignment, you will obtain a merged RDS object
+  containing both the reference image and the aligned sample (note that
+  the unaligned coordinates are also retained). You can split this
+  object using the Seurat function
+
+``` r
+SplitObject(object, split.by = "attribute")
+```
+
+Then, remove the reference object and save the remaining data with
+
+``` r
+saveRDS(object) 
+```
+
 ### Example Data
 
 The data used to replicate the vignettes originate from [Yadav et

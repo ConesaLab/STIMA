@@ -8,8 +8,8 @@ graph_cellTypesDeconvolution(
   listaObjDeconv,
   cell.types = c("Astrcytes", "Microglia", "OPC", "Endothelial", "Neurons", "Pericytes",
     "Schwann", "Lymphocytes", "Oligodendrocytes", "Ependymal Cells", "Meninges"),
-  cell_colors = c("#E41A1C", "#377EB8", "#4DAF4A", "#FF7F00", "#984EA3", "#FFFF33",
-    "#A65628", "#F781BF", "#999999", "#66C2A5", "#FC8D62")
+  cell_colors = c("#984EA3", "#377EB8", "#4DAF4A", "#FF7F00", "#E41A1C", "#999999",
+    "#A65628", "#F781BF", "#FFFF33", "#66C2A5", "#FC8D62")
 )
 }
 \arguments{

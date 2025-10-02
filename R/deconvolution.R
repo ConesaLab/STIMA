@@ -301,9 +301,11 @@ deconvolutionRCTD_mergeFiles <- function(modes = c("GTEM", "procrustes", "RVSSim
       }
       
       if (i == ims[[1]]) { 
-        listaObjDeconv[[patient]][[mode]][["1"]] <- listaObjAnnot$reference 
+        listaObjDeconv[[patient]][[mode]][["1"]] <- listaObjAnnot$reference
+        listaObjDeconv[[patient]][["unaligned"]][["1"]] <- listaObjAnnot$reference 
       }
       listaObjDeconv[[patient]][[mode]][[i]] <- listaObjAnnot$problemYESalign
+      listaObjDeconv[[patient]][["unaligned"]][[i]] <- listaObjAnnot$problemNOTalign
       
     } # end_for_Nimage 
   } # end_for_mode

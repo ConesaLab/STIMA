@@ -16,9 +16,9 @@ graph_cellTypesDeconvolution <- function(listaObjDeconv,
                                          cell.types = c("Astrcytes", "Microglia", "OPC", "Endothelial", 
                                                          "Neurons", "Pericytes", "Schwann", "Lymphocytes", 
                                                          "Oligodendrocytes", "Ependymal Cells", "Meninges"),
-                                         cell_colors = c("#E41A1C", "#377EB8", "#4DAF4A", "#FF7F00",
-                                                          "#984EA3", "#FFFF33", "#A65628", "#F781BF",
-                                                          "#999999", "#66C2A5", "#FC8D62")
+                                         cell_colors = c("#984EA3", "#377EB8", "#4DAF4A", "#FF7F00",
+                                                         "#E41A1C", "#999999", "#A65628", "#F781BF",
+                                                         "#FFFF33", "#66C2A5", "#FC8D62")
                                         ) {
 
   if (!dir.exists("./results/graphs/")) {
@@ -71,15 +71,17 @@ graph_cellTypesDeconvolution <- function(listaObjDeconv,
           fila <- p1 + p2
           filas[["ref"]] <- fila
         }
-        # Image 3 as the problem
-        p2 <- listaPoints[[im]][[cell_type]][[modo]] + ggtitle("") + theme_void() + theme(legend.position = "none")
-        p21 <- listaGraphs[[im]][[cell_type]][[modo]] + ggtitle("") + theme_void() + theme(legend.position = "none")
+        if (im != 1 | (modo == names(listaObjDeconv[[patient]])[[1]] & im == 1)) {
+          # Image 3 as the problem
+          p2 <- listaPoints[[im]][[cell_type]][[modo]] + ggtitle("") + theme_void() + theme(legend.position = "none")
+          p21 <- listaGraphs[[im]][[cell_type]][[modo]] + ggtitle("") + theme_void() + theme(legend.position = "none")
        
-        # Una fila con las dos columnas (sin y con histología)
-        fila <- p2 + p21
-        filas[[modo]] <- fila
+          # Una fila con las dos columnas (sin y con histología)
+          fila <- p2 + p21
+          filas[[modo]] <- fila
+        }
       }
-    
+
       # Apilar las filas verticalmente
       panel_completo <- wrap_plots(filas, ncol = 1)
       listaFinalPlots[[cell_type]][[im]] <- panel_completo
@@ -97,7 +99,7 @@ graph_cellTypesDeconvolution <- function(listaObjDeconv,
   # Save the legend
   legendlist <- list()
   for (i in seq_along(cell.types)) {
-    legendlist[[cell.types[[i]]]] <- Seurat::SpatialFeaturePlot(listaObjDeconv[[patient]][["reference"]], 
+    legendlist[[cell.types[[i]]]] <- Seurat::SpatialFeaturePlot(listaObjDeconv[[patient]][[1]][[1]], 
                                                   features = cell.types[[i]], 
                                                   pt.size.factor = 0, 
                                                   crop = FALSE, 
@@ -363,9 +365,7 @@ graph_evalMetrics <- function(modes = c("GTEM", "procrustes", "RVSSimageJ","PAST
   datosEucl_long$method    <- factor(datosEucl_long$method)
   
   # Linear Mixed Model
-  # distance ~ condition + (1 | image_id) 
-  #      (1|image) variability between images
-  #      (1 | image_id:landmark_id) variability by landmarks in each image
+  # distance ~ condition + (1 | image_id)
   
   resultsEucl <- lapply(levels(datosEucl_long$method), function(method_i) {
     dd <- subset(datosEucl_long, (method == method_i))
@@ -400,10 +400,8 @@ graph_evalMetrics <- function(modes = c("GTEM", "procrustes", "RVSSimageJ","PAST
   datosRV_long$method    <- factor(datosRV_long$method)
   
   # Linear Mixed Model
-  # distance ~ condition + (1 | image_id) 
-  #      (1|image) variability between images
-  #      (1 | image_id:landmark_id) variability by landmarks in each image
-  
+  # distance ~ condition + (1 | image_id)
+
   resultsRV <- lapply(levels(datosRV_long$method), function(method_i) {
     dd <- subset(datosRV_long, method == method_i)
     mod <- lmerTest::lmer(
