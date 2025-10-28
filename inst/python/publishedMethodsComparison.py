@@ -152,7 +152,7 @@ def h5ad_create():
 
     carpetaData = "./results/AnnData/"
 
-    slice_indices = sorted(set(f.split("slice")[1].split(".")[0] for f in os.listdir(saveDir) if "slice" in f))
+    slice_indices = sorted(set(f.split("slice")[1].split(".")[0] for f in os.listdir(carpetaData) if "slice" in f))
     for i in slice_indices:
         i = str(i)
         # Load expression matrixes and metadata for each slice
