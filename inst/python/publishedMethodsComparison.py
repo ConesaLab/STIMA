@@ -54,7 +54,7 @@ def normalize_images(image):
 
 
 def STalign_transformation(points_im_prob_rc, points_im_ref_rc, 
-                           im_prob_norm, im_ref_norm
+                           im_prob_norm, im_ref_norm,
                            y_im_prob, x_im_prob):
     """
     Perform the STalign transformation on the images and points.
