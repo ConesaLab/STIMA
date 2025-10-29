@@ -151,3 +151,58 @@ download_example_data <- function(dest_dir = tempdir()) {
   
   return(dest_dir)
 }
+
+#' saveSeurat_forAnnData_fromFolder(RDSObjsFolder)
+#' 
+#' This function saves all the Seurat objects (RDS) from the given folder in a 
+#' format compatible with AnnData in a folder named 'tempfiles'.
+#' It saves the expression matrix, cell metadata, image coordinates, scale factors,
+#' and gene metadata for each slice of the Seurat object.
+#' 
+#' @param RDSObjsFolder Folder containing the RDS Seurat objects.
+#' @return None
+#' @export
+saveSeurat_forAnnData_fromFolder <- function(RDSObjsFolder) {
+   files <- unlist(list.files(path = RDSObjsFolder, full.names = TRUE, pattern = "rds"))
+   rdsfiles <- lapply(files, readRDS)
+   names(rdsfiles) <- file_path_sans_ext(basename(unlist(files)))
+
+   for (i in seq_along(rdsfiles)) { 
+      object <- rdsfiles[[i]]
+      j <- names(rdsfiles[i])
+      k <- object@meta.data$slice[[1]]
+      saveDir <- "./tempfiles/"
+
+      if (!dir.exists(saveDir)) {
+         dir.create(saveDir, recursive = TRUE)
+      }
+
+      # Expression data = counts
+      counts_layer <- object@assays$Spatial@layers[[names(object@assays[["Spatial"]]@layers)]]
+      counts_layer_T <- t(counts_layer)
+      utils::write.csv(as.matrix(counts_layer_T), paste0(saveDir,"expression_matrix_slice", j, ".csv"))
+
+      # Cell metadata 
+      cell_metadata <- object@meta.data
+      utils::write.csv(cell_metadata, paste0(saveDir, "cell_metadata_slice", j, ".csv"))
+
+      # Spatial coordinates (row, col, imagerow, imagecol)
+      image_coords <- object@images[[names(object@images)[[2]]]]@coordinates
+      image_coords_df <- as.data.frame(image_coords)  # Convertir en un data.frame
+      utils::write.csv(image_coords_df, paste0(saveDir, "image_coordinates_slice", j, ".csv"))
+
+      # scale.factors
+      scale_factors <- list()
+      scale_factors$tissue_lowres_scalef <- object@images[[names(object@images)[[2]]]]@scale.factors$lowres
+      scale_factors$tissue_hires_scalef <- object@images[[names(object@images)[[2]]]]@scale.factors$hires
+      scale_factors$spot_diameter_fullres <- object@images[[names(object@images)[[2]]]]@scale.factors$spot
+      scale_factors$fiducial_diameter_fullres <- object@images[[names(object@images)[[2]]]]@scale.factors$fiducial
+      utils::write.csv(scale_factors, paste0(saveDir, "scale_factors_slice", j, ".csv"))
+
+      # Gene metadata (shared for all the slices)
+      utils::write.csv(rownames(object@assays$Spatial@features), 
+                       paste0(saveDir, "gene_metadata", j, ".csv"))
+
+      STIMA::saveImages(object, out_dir = saveDir, format = "png", name = paste0("spatial_image_slice",j))
+   }
+}

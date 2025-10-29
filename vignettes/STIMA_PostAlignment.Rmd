@@ -1,0 +1,171 @@
+---
+title: "Post-alignment slices adaptations"
+author: "Victor Gaya"
+date: "`r Sys.Date()`"
+output: html_document
+reticulate:
+  python_engine: python
+vignette: >
+  %\VignetteIndexEntry{Post-alignment slices adaptations}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+## Loading required packages
+```{r}
+#| label: packages
+#remove.packages("STIMA")
+#remotes::install_github("vagm110901/STIMA")
+library(STIMA)
+
+library(tools)
+library(reticulate)
+```
+
+## Input data
+```{r, eval=FALSE}
+#| label: folder
+# Define the folder where raw data is located
+inputDir <- "/storage/gge/Victor/cell2spine/fullexp/results"
+```
+
+## Diferenciate crop / non-crop
+```{r, eval=FALSE}
+#| label: list_files
+# Listing files
+files <- list.files(path = inputDir, full.names = TRUE, recursive = FALSE)
+rds_files <- rds_files <- files[grepl("\\.rds$", files)]
+
+rds_groups <- list(
+  nocrop = rds_files[!grepl("crop", rds_files)],
+  crop   = rds_files[grepl("crop", rds_files)]
+)
+```
+
+# Split the RDS files
+```{r, eval=FALSE}
+#| label: split_rds
+# Define the save directory
+saveDir <- paste0(inputDir,"/split")
+    if (!dir.exists(saveDir)) {
+      dir.create(saveDir, recursive = TRUE)}
+
+# We read each rds file
+for (group in names(rds_groups)) {
+  for (rds_file in rds_groups[[group]]) {
+    listAligned <- readRDS(rds_file) 
+    paciente_merge_aligned <- listAligned$alignedObj
+    
+    info <- paciente_merge_aligned@meta.data[["info"]][[1]]
+    print(info)
+
+    # Split the samples
+    paciente_aligned.list <- SplitObject(paciente_merge_aligned, split.by = "slice") 
+    # change the split.by value for the metadata information used to split the objects
+  
+    # Delete the reference one
+    paciente_aligned.list$reference <- NULL
+
+    for (i in seq_along(paciente_aligned.list)){
+
+      slice <- paciente_aligned.list[[i]]@meta.data[["slice"]][[1]]
+      print(slice)
+
+      # Image name and key
+      image_name <- names(paciente_aligned.list[[i]])[[2]]
+      image_key <- paciente_aligned.list[[i]]@images[[1]]@key
+
+      # Change the name and the key to the aligned image (optional)
+      img <- paciente_aligned.list[[i]]@images[[2]]
+      paciente_aligned.list[[i]]@images[[paste0(image_name, "_aligned")]] <- img
+      paciente_aligned.list[[i]]@images[[2]] <- NULL
+      paciente_aligned.list[[i]]@images[[2]]@key <- paste0(image_key, "_aligned_")
+      
+      # Save separatley crop and non-crop slices
+      if (group == "crop") {
+        saveName <- paste0(saveDir, "/", slice, "_aligned_crop.rds")
+      } else {saveName <- paste0(saveDir, "/", slice, "_aligned.rds")}
+      saveRDS(paciente_aligned.list[[i]], file = saveName)
+    }
+  }
+}
+```
+
+# Save RDS files to AnnData format
+## Save the csv files from RDS
+```{r, eval=FALSE}
+#| label: CSV_files
+STIMA::saveSeurat_forAnnData_fromFolder(saveDir)
+```
+
+## Create the AnnData files
+### Loading required packages
+```{python, eval=FALSE}
+#| label: packages
+import os
+import pandas as pd
+import numpy as np
+import scanpy as sc
+import seaborn as sns
+import matplotlib.pyplot as plt
+import matplotlib.patches as mpatches
+from scipy.sparse import csr_matrix
+from skimage import io
+from skimage.draw import disk
+import anndata as ad
+```
+
+
+```{python, eval=FALSE}
+carpetaData = "./tempfiles/"
+carpetaSave = "./adata/"
+
+slice_indices = sorted(set(f.split("slice")[1].split(".")[0] for f in os.listdir(carpetaData) if "slice" in f))
+for i in slice_indices:
+    i = str(i)
+    # Load expression matrices and metadata for each slice
+    expression = pd.read_csv(f'{carpetaData}expression_matrix_slice{i}.csv', index_col=0)
+    cell_metadata = pd.read_csv(f'{carpetaData}cell_metadata_slice{i}.csv', index_col=0)
+    gene_metadata = pd.read_csv(f'{carpetaData}gene_metadata{i}.csv', index_col=0)  
+        
+    # Load spatial coordinates (imagerow, imagecol)
+    image_coords = pd.read_csv(f'{carpetaData}image_coordinates_slice{i}.csv', index_col=0)
+
+    #image_coords[["col", "row"]] = image_coords[["row", "col"]]
+    image_coords[["imagerow", "imagecol"]] = image_coords[["imagecol", "imagerow"]]
+
+    spatial_coords = image_coords[['imagerow', 'imagecol']]  # adjust by columns names
+    scale_factors = pd.read_csv(f'{carpetaData}scale_factors_slice{i}.csv', index_col=0)
+        
+    image_coords_selected = image_coords.iloc[:,:]
+    cell_metadata = cell_metadata.join(image_coords_selected, how="left")
+        
+    # Load the histological spatial image
+    spatial_image = io.imread(f'{carpetaData}spatial_image_slice{i}.png')
+
+    # Create AnnData object
+    adata = sc.AnnData(X=expression.values, obs=cell_metadata, var=gene_metadata)
+
+    # Include Spatial coordinates
+    adata.obsm['spatial'] = spatial_coords.values
+    #adata.obsm['rgb'] = spatial_image
+
+    # Associate image to the AnnData object
+    image_name = str(cell_metadata.name.iloc[0])
+    adata.uns['spatial'] = {image_name: {}}
+    adata.uns['spatial'][image_name]['images'] = {}
+    adata.uns['spatial'][image_name]['images'] = {'lowres': spatial_image}
+    adata.uns['spatial'][image_name]['scalefactors'] = {
+        'tissue_hires_scalef': float(scale_factors.tissue_hires_scalef.iloc[0]),
+        'tissue_lowres_scalef': float(scale_factors.tissue_lowres_scalef.iloc[0]),
+        'spot_diameter_fullres': float(scale_factors.spot_diameter_fullres.iloc[0]),
+        'fiducial_diameter_fullres': float(scale_factors.fiducial_diameter_fullres.iloc[0])}
+        
+    adata.var_names = adata.var['x']
+    adata.X = csr_matrix(adata.X)
+
+    # Save the AnnData as h5ad format
+    adata.write(f'{carpetaSave}{i}.h5ad')
+```
+
+
