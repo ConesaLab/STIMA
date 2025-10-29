@@ -2,7 +2,7 @@
 title: "Post-alignment slices adaptations"
 author: "Victor Gaya"
 date: "`r Sys.Date()`"
-output: html_document
+output: rmarkdown::html_vignette
 reticulate:
   python_engine: python
 vignette: >
@@ -12,7 +12,7 @@ vignette: >
 ---
 
 ## Loading required packages
-```{r}
+```{r, eval=FALSE}
 #| label: packages
 #remove.packages("STIMA")
 #remotes::install_github("vagm110901/STIMA")
@@ -101,7 +101,7 @@ STIMA::saveSeurat_forAnnData_fromFolder(saveDir)
 ## Create the AnnData files
 ### Loading required packages
 ```{python, eval=FALSE}
-#| label: packages
+#| label: py_packages
 import os
 import pandas as pd
 import numpy as np
@@ -117,6 +117,7 @@ import anndata as ad
 
 
 ```{python, eval=FALSE}
+#| label: AnnData_creation
 carpetaData = "./tempfiles/"
 carpetaSave = "./adata/"
 

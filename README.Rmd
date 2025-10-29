@@ -63,6 +63,7 @@ renv::restore()
 STIMA provides the following vignettes to better understand the functionality of the package:
 
 - [STIMA Usage](vignettes/STIMA_align_intrapatient.Rmd): Guide on how to use STIMA for aligning multiple slices. It covers three main steps: 1) STIMA alignment, 2) Evaluation, and 3) Deconvolution. 
+- [STIMA RDS-AnnData compatibility](vignettes/STIMA_PostAlignment.Rmd): Guide on how to process data after performing STIMA alignment. It covers splitting the single object that contains all alignment slices (the output of STIMA alignment) into separate objects—one for each slice—and saving CSV files for creating an AnnData object to perform further analyses in Python.
 - [Creating Seurat objects for intra-patient alignment](vignettes/Rscript_Yadav2023_Merge4Slices.Rmd): Instructions on how to load and merge multiple 10x Visium ST slices from the same patient into a single Seurat object for STIMA alignment. 
 - [Creating Seurat objects for inter-patient alignment](vignettes/Rscript_Yadav2023_Merge4Patients.Rmd): Instructions on how to load and merge multiple 10x Visium ST samples from different patients into a single Seurat object for STIMA alignment.
 
@@ -70,14 +71,7 @@ STIMA provides the following vignettes to better understand the functionality of
 
 - It is recommended to use the **filtered H5 files** rather than the raw ones. 
 - If you crop the data and images before alignment, ensure that the tissue region containing gene expression information is correctly selected. Otherwise, the crop will be inaccurate, and the resulting tissue section could appear smaller than it actually is.
-- After performing the alignment, you will obtain a merged RDS object containing both the reference image and the aligned sample (note that the unaligned coordinates are also retained). You can split this object using the Seurat function 
-```r
-SplitObject(object, split.by = "attribute")
-```
-Then, remove the reference object and save the remaining data with 
-```r 
-saveRDS(object) 
-```  
+- After performing the alignment, you will obtain a merged RDS object containing both the reference image and the aligned sample (note that the unaligned coordinates are also retained). You can split this object using the Seurat function SplitObject(). Then, remove the reference object and save the remaining data. It is explained in vignette [STIMA RDS-AnnData compatibility](vignettes/STIMA_PostAlignment.Rmd).
 
 ### Example Data
 

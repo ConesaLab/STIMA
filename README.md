@@ -64,6 +64,12 @@ functionality of the package:
 - [STIMA Usage](vignettes/STIMA_align_intrapatient.Rmd): Guide on how to
   use STIMA for aligning multiple slices. It covers three main steps: 1)
   STIMA alignment, 2) Evaluation, and 3) Deconvolution.
+- [STIMA RDS-AnnData compatibility](vignettes/STIMA_PostAlignment.Rmd):
+  Guide on how to process data after performing STIMA alignment. It
+  covers splitting the single object that contains all alignment slices
+  (the output of STIMA alignment) into separate objects—one for each
+  slice—and saving CSV files for creating an AnnData object to perform
+  further analyses in Python.
 - [Creating Seurat objects for intra-patient
   alignment](vignettes/Rscript_Yadav2023_Merge4Slices.Rmd): Instructions
   on how to load and merge multiple 10x Visium ST slices from the same
@@ -85,17 +91,10 @@ functionality of the package:
 - After performing the alignment, you will obtain a merged RDS object
   containing both the reference image and the aligned sample (note that
   the unaligned coordinates are also retained). You can split this
-  object using the Seurat function
-
-``` r
-SplitObject(object, split.by = "attribute")
-```
-
-Then, remove the reference object and save the remaining data with
-
-``` r
-saveRDS(object) 
-```
+  object using the Seurat function SplitObject(). Then, remove the
+  reference object and save the remaining data. It is explained in
+  vignette [STIMA RDS-AnnData
+  compatibility](vignettes/STIMA_PostAlignment.Rmd).
 
 ### Example Data
 
