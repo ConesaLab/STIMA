@@ -5,7 +5,7 @@
 
 <!-- badges: end -->
 
-[**STIMA**](https://github.com/vagm110901/STIMA) (*Spatial
+[**STIMA**](https://github.com/ConesaLab/STIMA) (*Spatial
 Transcriptomics Image-based Methods for Alignment*), is designed to
 align two or more ST slices or samples, enabling the comparison and
 analysis of gene expression within the same regions. STIMA performs
@@ -14,10 +14,22 @@ reference, which includes both the tissue microscope image and the
 spatial spot matrix of gene expression. However, STIMA relies
 exclusively on image data for alignment without incorporating gene
 expression data, thereby preserving the independence of transcriptomic
-information across samples. STIMA includes three distinct alignment
-approaches—**Geometric Transformation Estimation Model (GTEM)**,
-**Procrustes Transformation** and **the ImageJ plugin Register Virtual
-Stack Slices (RVSS-ImageJ)**.
+information across samples.
+
+STIMA includes three distinct alignment approaches:
+
+- **Geometric Transformation Estimation Model (GTEM)**: [Krasheninnikov
+  & Potapov 2012](https://doi.org/10.1134/S105466181202006X); [Zhao et
+  al. 2022](https://doi.org/10.1016/B978-0-12-824349-7.00021-9)
+- **Procrustes Transformation**: [Gower
+  1975](https://doi.org/10.1007/BF02291478); [Murphy et
+  al. 2020](https://doi.org/10.1214/19-BA1179)
+- **The ImageJ plugin Register Virtual Stack Slices (RVSS-ImageJ)**:
+  [ImageJ Wiki
+  2022](https://imagej.github.io/plugins/register-virtual-stack-slices)
+
+**STIMA** takes its name from the Valencian/Catalan word *estima*,
+meaning *‘love’*.
 
 ## Installation
 
@@ -25,7 +37,7 @@ You can install STIMA from [GitHub](https://github.com/) with:
 
 ``` r
 #install.packages("remotes")
-remotes::install_github("vagm110901/STIMA")
+remotes::install_github("ConesaLab/STIMA")
 ```
 
 ### ⚠️ WARNING:
