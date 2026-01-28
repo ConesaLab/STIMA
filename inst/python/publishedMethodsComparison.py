@@ -357,6 +357,8 @@ def PASTE2_align():
     patient_1_name = f"{carpetaData}PASTE2_merge_1.h5ad"
     patient_1 = sc.read_h5ad(patient_1_name)
     sc.pp.filter_genes(patient_1, min_cells=5)
+    sc.pp.highly_variable_genes(patient_1, n_top_genes=2000, flavor='seurat_v3', check_values=False)
+    patient_1 = patient_1[:, patient_1.var.highly_variable].copy()
 
     rowmin_0 = min(patient_1.obs.imagerow)
     colmin_0 = min(patient_1.obs.imagecol)
@@ -368,6 +370,8 @@ def PASTE2_align():
             patient_prob_name = f"{carpetaData}PASTE2_merge_{i}.h5ad"
             patient_prob = sc.read_h5ad(patient_prob_name)
             sc.pp.filter_genes(patient_prob, min_cells=5)
+            sc.pp.highly_variable_genes(patient_prob, n_top_genes=2000, flavor='seurat_v3', check_values=False)
+            patient_prob = patient_prob[:, patient_prob.var.highly_variable].copy()
 
             rowmax = max(patient_prob.obs.imagerow)
             colmax = max(patient_prob.obs.imagecol)
@@ -378,7 +382,8 @@ def PASTE2_align():
 
 
             # 100% Gene Expression
-            pi_e = PASTE2.partial_pairwise_align(patient_1, patient_prob, s = s_1prob)
+            D = PASTE2.glmpca_distance(patient_1, patient_prob, L=15, penalty=50)
+            pi_e = PASTE2.partial_pairwise_align(patient_1, patient_prob, s = s_1prob, dissimilarity='precomputed', dist=D)
             new_e = projection.partial_stack_slices_pairwise([patient_1, patient_prob], [pi_e])
             patient_1_align = new_e[0]
             patient_prob_align = new_e[1]
@@ -397,7 +402,8 @@ def PASTE2_align():
 
 
             # 50% Gene Expression + 50% Histology
-            pi_eh = PASTE2.partial_pairwise_align_histology(patient_1, patient_prob, s = s_1prob)
+            D = PASTE2.glmpca_distance(patient_1, patient_prob, L=15, penalty=50)
+            pi_eh = PASTE2.partial_pairwise_align_histology(patient_1, patient_prob, s = s_1prob, dissimilarity='precomputed', dist=D)
             new_eh = projection.partial_stack_slices_pairwise([patient_1, patient_prob], [pi_eh])
             patient_1_align = new_eh[0]
             patient_prob_align = new_eh[1]
@@ -415,7 +421,8 @@ def PASTE2_align():
 
 
             # 100% Histology
-            pi_h = partial_pairwise_align_histology(patient_1, patient_prob, s = s_1prob)
+            D = PASTE2.glmpca_distance(patient_1, patient_prob, L=15, penalty=50)
+            pi_h = partial_pairwise_align_histology(patient_1, patient_prob, s = s_1prob, dissimilarity='precomputed', dist=D)
             new_h = projection.partial_stack_slices_pairwise([patient_1, patient_prob], [pi_h])
             patient_1_align = new_h[0]
             patient_prob_align = new_h[1]
