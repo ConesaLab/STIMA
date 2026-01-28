@@ -372,6 +372,44 @@ def PASTE2_align():
 
             s_1prob = 0.9
 
+
+            # 100% Gene Expression
+            pi_e = PASTE2.partial_pairwise_align(patient_1, patient_prob, s = s_1prob)
+            new_e = projection.partial_stack_slices_pairwise([patient_1, patient_prob], [pi_e])
+            patient_1_align = new_e[0]
+            patient_prob_align = new_e[1]
+
+            rowmin = np.min(patient_1_align.obsm['spatial'][:,0])
+            colmin = np.min(patient_1_align.obsm['spatial'][:,1])
+
+
+            patient_1_align.obsm['spatial'][:,0] = patient_1_align.obsm['spatial'][:,0] - rowmin + rowmin_0
+            patient_1_align.obsm['spatial'][:,1] = patient_1_align.obsm['spatial'][:,1] - colmin + colmin_0
+            patient_prob_align.obsm['spatial'][:,0] = patient_prob_align.obsm['spatial'][:,0] - rowmin + rowmin_0
+            patient_prob_align.obsm['spatial'][:,1] = patient_prob_align.obsm['spatial'][:,1] - colmin + colmin_0
+
+            patient_1_align.write(f"{saveData}/09/Paciente{patient}_merge_1_align1{N}_e.h5ad")
+            patient_prob_align.write(f"{saveData}/09/Paciente{patient}_merge_{N}_align1{N}_e.h5ad")
+
+
+            # 50% Gene Expression + 50% Histology
+            pi_eh = PASTE2.partial_pairwise_align_histology(patient_1, patient_prob, s = s_1prob)
+            new_eh = projection.partial_stack_slices_pairwise([patient_1, patient_prob], [pi_eh])
+            patient_1_align = new_eh[0]
+            patient_prob_align = new_eh[1]
+
+            rowmin = np.min(patient_1_align.obsm['spatial'][:,0])
+            colmin = np.min(patient_1_align.obsm['spatial'][:,1])
+            patient_1_align.obsm['spatial'][:,0] = patient_1_align.obsm['spatial'][:,0] - rowmin + rowmin_0
+            patient_1_align.obsm['spatial'][:,1] = patient_1_align.obsm['spatial'][:,1] - colmin + colmin_0
+            patient_prob_align.obsm['spatial'][:,0] = patient_prob_align.obsm['spatial'][:,0] - rowmin + rowmin_0
+            patient_prob_align.obsm['spatial'][:,1] = patient_prob_align.obsm['spatial'][:,1] - colmin + colmin_0
+
+            patient_1_align.write(f"{saveData}/09/Paciente{patient}_merge_1_align1{N}_eh.h5ad")
+            patient_prob_align.write(f"{saveData}/09/Paciente{patient}_merge_{N}_align1{N}_eh.h5ad")
+
+
+
             # 100% Histology
             pi_h = partial_pairwise_align_histology(patient_1, patient_prob, s = s_1prob)
             new_h = projection.partial_stack_slices_pairwise([patient_1, patient_prob], [pi_h])
@@ -387,7 +425,7 @@ def PASTE2_align():
 
             patient_1_align.write(f"{saveData}PASTE2_merge_1_align1{N}_h.h5ad")
             patient_prob_align.write(f"{saveData}PASTE2_merge_{N}_align1{N}_h.h5ad")
-    
+
 
 def saveAnnData_forSeurat():
     """
