@@ -382,7 +382,7 @@ def PASTE2_align():
 
 
             # 100% Gene Expression
-            D = PASTE2.glmpca_distance(patient_1, patient_prob, L=15, penalty=50)
+            D = PASTE2.glmpca_distance(patient_1, patient_prob, penalty=50)
             pi_e = PASTE2.partial_pairwise_align(patient_1, patient_prob, s = s_1prob, dissimilarity='precomputed', dist=D)
             new_e = projection.partial_stack_slices_pairwise([patient_1, patient_prob], [pi_e])
             patient_1_align = new_e[0]
@@ -402,7 +402,7 @@ def PASTE2_align():
 
 
             # 50% Gene Expression + 50% Histology
-            D = PASTE2.glmpca_distance(patient_1, patient_prob, L=15, penalty=50)
+            D = PASTE2.glmpca_distance(patient_1, patient_prob, penalty=50)
             pi_eh = PASTE2.partial_pairwise_align_histology(patient_1, patient_prob, s = s_1prob, dissimilarity='precomputed', dist=D)
             new_eh = projection.partial_stack_slices_pairwise([patient_1, patient_prob], [pi_eh])
             patient_1_align = new_eh[0]
@@ -421,7 +421,7 @@ def PASTE2_align():
 
 
             # 100% Histology
-            D = PASTE2.glmpca_distance(patient_1, patient_prob, L=15, penalty=50)
+            D = PASTE2.glmpca_distance(patient_1, patient_prob, penalty=50)
             pi_h = partial_pairwise_align_histology(patient_1, patient_prob, s = s_1prob, dissimilarity='precomputed', dist=D)
             new_h = projection.partial_stack_slices_pairwise([patient_1, patient_prob], [pi_h])
             patient_1_align = new_h[0]
