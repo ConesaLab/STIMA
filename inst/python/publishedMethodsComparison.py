@@ -373,6 +373,12 @@ def PASTE2_align():
             sc.pp.highly_variable_genes(patient_prob, n_top_genes=2000, flavor='seurat_v3', check_values=False)
             patient_prob = patient_prob[:, patient_prob.var.highly_variable].copy()
 
+            patient_1, patient_prob = intersect(patient_1, patient_prob)
+            if not isinstance(patient_1.X, np.ndarray):
+                patient_1.X = patient_1.X.toarray()
+            if not isinstance(patient_prob.X, np.ndarray):
+                patient_prob.X = patient_prob.X.toarray()
+
             rowmax = max(patient_prob.obs.imagerow)
             colmax = max(patient_prob.obs.imagecol)
             patient_prob.obsm['spatial'][:,0] = patient_prob.obsm['spatial'][:,0] / rowmax * rowmax_0
