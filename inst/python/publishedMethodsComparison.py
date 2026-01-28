@@ -356,6 +356,7 @@ def PASTE2_align():
 
     patient_1_name = f"{carpetaData}PASTE2_merge_1.h5ad"
     patient_1 = sc.read_h5ad(patient_1_name)
+    sc.pp.filter_genes(patient_1, min_cells=5)
 
     rowmin_0 = min(patient_1.obs.imagerow)
     colmin_0 = min(patient_1.obs.imagecol)
@@ -366,6 +367,7 @@ def PASTE2_align():
         if i != 1:
             patient_prob_name = f"{carpetaData}PASTE2_merge_{i}.h5ad"
             patient_prob = sc.read_h5ad(patient_prob_name)
+            sc.pp.filter_genes(patient_prob, min_cells=5)
 
             rowmax = max(patient_prob.obs.imagerow)
             colmax = max(patient_prob.obs.imagecol)
