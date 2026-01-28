@@ -349,6 +349,7 @@ def PASTE2_align():
     from paste2.helper import kl_divergence, intersect, to_dense_array, extract_data_matrix, generalized_kl_divergence, high_umi_gene_distance, pca_distance, glmpca_distance
 
     carpetaData = "./results/PASTE2/"
+    saveData = carpetaData
 
     #slice_indices = sorted(set(f.split("align1")[1].split("_h.")[0] for f in os.listdir(carpetaData) if "slice" in f))
     slice_indices = sorted(set(f.split("_")[-1].split(".h5ad")[0] for f in os.listdir(carpetaData) if f.endswith(".h5ad")))
@@ -389,8 +390,8 @@ def PASTE2_align():
             patient_prob_align.obsm['spatial'][:,0] = patient_prob_align.obsm['spatial'][:,0] - rowmin + rowmin_0
             patient_prob_align.obsm['spatial'][:,1] = patient_prob_align.obsm['spatial'][:,1] - colmin + colmin_0
 
-            patient_1_align.write(f"{saveData}/09/Paciente{patient}_merge_1_align1{N}_e.h5ad")
-            patient_prob_align.write(f"{saveData}/09/Paciente{patient}_merge_{N}_align1{N}_e.h5ad")
+            patient_1_align.write(f"{saveData}PASTE2_merge_1_align1{N}_e.h5ad")
+            patient_prob_align.write(f"{saveData}PASTE2_merge_{N}_align1{N}_e.h5ad")
 
 
             # 50% Gene Expression + 50% Histology
@@ -406,8 +407,8 @@ def PASTE2_align():
             patient_prob_align.obsm['spatial'][:,0] = patient_prob_align.obsm['spatial'][:,0] - rowmin + rowmin_0
             patient_prob_align.obsm['spatial'][:,1] = patient_prob_align.obsm['spatial'][:,1] - colmin + colmin_0
 
-            patient_1_align.write(f"{saveData}/09/Paciente{patient}_merge_1_align1{N}_eh.h5ad")
-            patient_prob_align.write(f"{saveData}/09/Paciente{patient}_merge_{N}_align1{N}_eh.h5ad")
+            patient_1_align.write(f"{saveData}PASTE2_merge_1_align1{N}_eh.h5ad")
+            patient_prob_align.write(f"{saveData}PASTE2_merge_{N}_align1{N}_eh.h5ad")
 
 
 
