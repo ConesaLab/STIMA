@@ -350,7 +350,8 @@ def PASTE2_align():
 
     carpetaData = "./results/PASTE2/"
 
-    slice_indices = sorted(set(f.split("align1")[1].split("_h.")[0] for f in os.listdir(carpetaData) if "slice" in f))
+    #slice_indices = sorted(set(f.split("align1")[1].split("_h.")[0] for f in os.listdir(carpetaData) if "slice" in f))
+    slice_indices = sorted(set(f.split("_")[-1].split(".h5ad")[0] for f in os.listdir(carpetaData) if f.endswith(".h5ad")))
 
     patient_1_name = f"{carpetaData}PASTE2_merge_1.h5ad"
     patient_1 = sc.read_h5ad(patient_1_name)
