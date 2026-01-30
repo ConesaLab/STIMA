@@ -334,9 +334,11 @@ def partial_pairwise_align_histology(sliceA, sliceB, alpha=0.1, s=None, armijo=F
     return pi
 
 
-def PASTE2_align():
+def PASTE2_align(dissimilarity = 'glmpca'):
     """
     Performs the alignemnt by PASTE2.
+
+    dissimilarity: glmpca, kl, euclidean
 
     Notes:
         - The function reads from the directory "./results/PASTE2/".
@@ -356,9 +358,6 @@ def PASTE2_align():
 
     patient_1_name = f"{carpetaData}PASTE2_merge_1.h5ad"
     patient_1 = sc.read_h5ad(patient_1_name)
-    sc.pp.filter_genes(patient_1, min_cells=5)
-    sc.pp.highly_variable_genes(patient_1, n_top_genes=2000, flavor='seurat_v3', check_values=False)
-    patient_1 = patient_1[:, patient_1.var.highly_variable].copy()
 
     rowmin_0 = min(patient_1.obs.imagerow)
     colmin_0 = min(patient_1.obs.imagecol)
@@ -369,21 +368,6 @@ def PASTE2_align():
         if i != 1:
             patient_prob_name = f"{carpetaData}PASTE2_merge_{i}.h5ad"
             patient_prob = sc.read_h5ad(patient_prob_name)
-            sc.pp.filter_genes(patient_prob, min_cells=5)
-            sc.pp.highly_variable_genes(patient_prob, n_top_genes=2000, flavor='seurat_v3', check_values=False)
-            patient_prob = patient_prob[:, patient_prob.var.highly_variable].copy()
-
-            common_genes = patient_1.var_names.intersection(patient_prob.var_names)
-            p1_clean = patient_1[:, common_genes].copy()
-            pp_clean = patient_prob[:, common_genes].copy()
-            if not isinstance(patient_1.X, np.ndarray):
-                patient_1.X = patient_1.X.toarray()
-            if not isinstance(patient_prob.X, np.ndarray):
-                patient_prob.X = patient_prob.X.toarray()
-            if hasattr(p1_clean.X, 'toarray'):
-                p1_clean.X = p1_clean.X.toarray()
-            if hasattr(pp_clean.X, 'toarray'):
-                pp_clean.X = pp_clean.X.toarray()
 
             rowmax = max(patient_prob.obs.imagerow)
             colmax = max(patient_prob.obs.imagecol)
@@ -392,10 +376,8 @@ def PASTE2_align():
 
             s_1prob = 0.9
 
-
             # 100% Gene Expression
-            D = PASTE2.glmpca_distance(p1_clean, pp_clean)
-            pi_e = PASTE2.partial_pairwise_align(patient_1, patient_prob, s = s_1prob, dissimilarity='precomputed', dist=D)
+            pi_e = PASTE2.partial_pairwise_align(patient_1, patient_prob, s = s_1prob, dissimilarity = dissimilarity)
             new_e = projection.partial_stack_slices_pairwise([patient_1, patient_prob], [pi_e])
             patient_1_align = new_e[0]
             patient_prob_align = new_e[1]
@@ -414,8 +396,7 @@ def PASTE2_align():
 
 
             # 50% Gene Expression + 50% Histology
-            D = PASTE2.glmpca_distance(p1_clean, pp_clean)
-            pi_eh = PASTE2.partial_pairwise_align_histology(patient_1, patient_prob, s = s_1prob, dissimilarity='precomputed', dist=D)
+            pi_eh = PASTE2.partial_pairwise_align_histology(patient_1, patient_prob, s = s_1prob, dissimilarity = dissimilarity)
             new_eh = projection.partial_stack_slices_pairwise([patient_1, patient_prob], [pi_eh])
             patient_1_align = new_eh[0]
             patient_prob_align = new_eh[1]
@@ -433,8 +414,7 @@ def PASTE2_align():
 
 
             # 100% Histology
-            D = PASTE2.glmpca_distance(p1_clean, pp_clean)
-            pi_h = partial_pairwise_align_histology(patient_1, patient_prob, s = s_1prob, dissimilarity='precomputed', dist=D)
+            pi_h = partial_pairwise_align_histology(patient_1, patient_prob, s = s_1prob, dissimilarity = dissimilarity)
             new_h = projection.partial_stack_slices_pairwise([patient_1, patient_prob], [pi_h])
             patient_1_align = new_h[0]
             patient_prob_align = new_h[1]
@@ -463,8 +443,9 @@ def saveAnnData_forSeurat():
 
     carpetaData = "./results/PASTE2/"
 
-    slice_indices = sorted(set(f.split("align1")[1].split("_h.")[0] for f in os.listdir(carpetaData) if "slice" in f))
+    slice_indices = sorted(set(f.split("align1")[1].split("_")[0] for f in os.listdir(carpetaData) if "PASTE2" and "align" in f))
     for i in slice_indices:
+        # 100% histology
         patient_1_name = (f"{carpetaData}PASTE2_merge_1_align1{i}_h.h5ad")
         patient_1 = sc.read_h5ad(patient_1_name)
 
@@ -476,3 +457,30 @@ def saveAnnData_forSeurat():
                 patient_1.obsm['spatial'], delimiter=",", fmt="%.2f", header="imagerow,imagecol", comments="")
         np.savetxt(f"{carpetaData}PASTE2_{i}_align1{i}_h_coord.csv",
                 patient_prob.obsm['spatial'], delimiter=",", fmt="%.2f", header="imagerow,imagecol", comments="")
+
+        # 50% histology + 50% gene expression
+        patient_1_name = (f"{carpetaData}PASTE2_merge_1_align1{i}_eh.h5ad")
+        patient_1 = sc.read_h5ad(patient_1_name)
+
+        patient_prob_name = (f"{carpetaData}PASTE2_merge_{i}_align1{i}_eh.h5ad")
+        patient_prob = sc.read_h5ad(patient_prob_name)
+
+        # 2 columns: imagerow, imagecol
+        np.savetxt(f"{carpetaData}PASTE2_1_align1{i}_eh_coord.csv",
+                patient_1.obsm['spatial'], delimiter=",", fmt="%.2f", header="imagerow,imagecol", comments="")
+        np.savetxt(f"{carpetaData}PASTE2_{i}_align1{i}_eh_coord.csv",
+                patient_prob.obsm['spatial'], delimiter=",", fmt="%.2f", header="imagerow,imagecol", comments="")
+
+        # 100% gene expression
+        patient_1_name = (f"{carpetaData}PASTE2_merge_1_align1{i}_e.h5ad")
+        patient_1 = sc.read_h5ad(patient_1_name)
+
+        patient_prob_name = (f"{carpetaData}PASTE2_merge_{i}_align1{i}_e.h5ad")
+        patient_prob = sc.read_h5ad(patient_prob_name)
+
+        # 2 columns: imagerow, imagecol
+        np.savetxt(f"{carpetaData}PASTE2_1_align1{i}_e_coord.csv",
+                patient_1.obsm['spatial'], delimiter=",", fmt="%.2f", header="imagerow,imagecol", comments="")
+        np.savetxt(f"{carpetaData}PASTE2_{i}_align1{i}_e_coord.csv",
+                patient_prob.obsm['spatial'], delimiter=",", fmt="%.2f", header="imagerow,imagecol", comments="")
+
