@@ -122,7 +122,7 @@ PASTE2toSeurat <- function(object, patientType = c('unique','multiple')) {
     # Load the new coordinates saved and generated as csv files by PASTE2.  
     new_coordsProb <- utils::read.csv(file = paste0(saveDir, "PASTE2_", N, "_align1", N, "_h_coord.csv"))
   
-    new_coordsProb <- escale(new_coordsProb, patientType, N, object)
+    new_coordsProb <- escale(object, new_coordsProb, patientType, N)
   
     object@images[[paste0("slice",N)]] <- object@images[[paste0("slice1.", N)]]
     object@images[[paste0("slice", N)]]@coordinates$imagerow <- unlist(new_coordsProb$imagecol)
