@@ -108,7 +108,7 @@ saveSeurat_forAnnData <- function(object, patientType = c('unique','multiple'), 
 #' @param object Original object to be modified.
 #' @param patientType Type of patient data. Options are 'unique' or 'multiple'.
 #' @export 
-PASTE2toSeurat <- function(object, patientType = c('unique','multiple')) {
+PASTE2toSeurat <- function(object, patientType = c('unique','multiple'), modes = c("h","eh","e")) {
   patientType <- match.arg(patientType)
   
   if (!dir.exists("./results/PASTE2/")) {
@@ -116,20 +116,22 @@ PASTE2toSeurat <- function(object, patientType = c('unique','multiple')) {
   }
   saveDir <- "./results/PASTE2/"
   
-  Ns <- as.character(seq(2, length(object@images)))
+  Ns <- as.character(seq(2, length(object@images)-1))
 
-  for (N in Ns) {
-    # Load the new coordinates saved and generated as csv files by PASTE2.  
-    new_coordsProb <- utils::read.csv(file = paste0(saveDir, "PASTE2_", N, "_align1", N, "_h_coord.csv"))
+  for (mode in modes) {
+    for (N in Ns) {
+      # Load the new coordinates saved and generated as csv files by PASTE2.  
+      new_coordsProb <- utils::read.csv(file = paste0(saveDir, "PASTE2_", N, "_align1", N, "_", mode, "_coord.csv"))
   
-    new_coordsProb <- escale(object, new_coordsProb, patientType, N)
+      new_coordsProb <- escale(object, new_coordsProb, patientType, N)
   
-    object@images[[paste0("slice",N)]] <- object@images[[paste0("slice1.", N)]]
-    object@images[[paste0("slice", N)]]@coordinates$imagerow <- unlist(new_coordsProb$imagecol)
-    object@images[[paste0("slice", N)]]@coordinates$imagecol <- unlist(new_coordsProb$imagerow)
-  }  
+      object@images[[paste0("slice",N)]] <- object@images[[paste0("slice1.", N)]]
+      object@images[[paste0("slice", N)]]@coordinates$imagerow <- unlist(new_coordsProb$imagecol)
+      object@images[[paste0("slice", N)]]@coordinates$imagecol <- unlist(new_coordsProb$imagerow)
+    }
 
-  saveRDS(object, file = paste0(saveDir,"objectAligned_merge_PASTE2.rds"))
+    saveRDS(object, file = paste0(saveDir,"objectAligned_merge_PASTE2",mode,".rds"))
+  }
 }
 
 #' seurat2pythonCommunication
@@ -186,9 +188,11 @@ calculateEvaluationPython <- function(objeto.seurat, mode = c("STalign", "PASTE2
     dir.create(paste0("./results/",mode,"/"), recursive = TRUE)
   }
   saveDir <- paste0("./results/",mode,"/")
+
+  Ns <- as.character(seq(1, length(objeto.seurat@images)/2))
   
   if (mode == "PASTE2") {
-    for (i in seq_along(1:4)) {
+    for (i in Ns) {
       coordenadas <- selectCoordPython(objeto.seurat@images[[paste0("slice1.",i)]]@image)
       for (j in seq_along(coordenadas)) {
         coordenadas[[j]] <- round(coordenadas[[j]])
@@ -199,7 +203,7 @@ calculateEvaluationPython <- function(objeto.seurat, mode = c("STalign", "PASTE2
 
   } else if (mode == "STalign") {
     listaCoordenadas <- list()
-    for (i in seq_along(1:4)) {
+    for (i in Ns) {
       coordenadas <- selectCoordPython(objeto.seurat@images[[paste0("slice1.",i)]]@image)
       for (j in seq_along(coordenadas)) {
         coordenadas[[j]] <- round(coordenadas[[j]])
@@ -208,7 +212,7 @@ calculateEvaluationPython <- function(objeto.seurat, mode = c("STalign", "PASTE2
     }
 
     listaCoordenadasNEW <- list()
-    for (i in seq_along(1:4)) {
+    for (i in Ns) {
       coordenadas <- selectCoordPython(objeto.seurat@images[[paste0("slice",i)]]@image)
       for (j in seq_along(coordenadas)) {
         coordenadas[[j]] <- round(coordenadas[[j]])
