@@ -8,6 +8,7 @@
 #' @return list containing the coordinates of the selected points with two elements: x and y.
 #' @export
 selectCoordPython <- function(image) {
+
   graphics::par(mfrow=c(1,1))
   plot(c(0,0), xlim=c(0,ncol(image)), ylim=c(0,nrow(image)),
        xlab=NA, ylab=NA, axes = FALSE, asp=1)
@@ -369,6 +370,7 @@ alignmentSTalign <- function(object, patientType = c('unique','multiple')) {
   # as STalign will integrate these landmarks with other imaging features in 
   # its optimization.
   
+  im_ref_norm <- reticulate::py_to_r(im_ref_norm)
   coordenadas_im_ref <- selectCoordPython(im_ref_norm)
   for (j in seq_along(coordenadas_im_ref)) {
     coordenadas_im_ref[[j]] <- round(coordenadas_im_ref[[j]])
@@ -402,7 +404,7 @@ alignmentSTalign <- function(object, patientType = c('unique','multiple')) {
 
     # target (problem)
     im_prob_norm <- funct_py$normalize_images(prob_image) 
-
+    im_prob_norm <- reticulate::py_to_r(im_prob_norm)
     coordenadas_im_prob <- selectCoordPython(im_prob_norm)
     for (j in seq_along(coordenadas_im_prob)) {
       coordenadas_im_prob[[j]] <- round(coordenadas_im_prob[[j]])
