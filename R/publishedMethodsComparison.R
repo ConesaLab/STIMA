@@ -369,7 +369,7 @@ alignmentSTalign <- function(object, patientType = c('unique','multiple')) {
   # as STalign will integrate these landmarks with other imaging features in 
   # its optimization.
   
-  coordenadas_im_ref <- selectCoordPython(py$im_ref_norm)
+  coordenadas_im_ref <- selectCoordPython(im_ref_norm)
   for (j in seq_along(coordenadas_im_ref)) {
     coordenadas_im_ref[[j]] <- round(coordenadas_im_ref[[j]])
   }
@@ -403,7 +403,7 @@ alignmentSTalign <- function(object, patientType = c('unique','multiple')) {
     # target (problem)
     im_prob_norm <- funct_py$normalize_images(prob_image) 
 
-    coordenadas_im_prob <- selectCoordPython(py$im_prob_norm)
+    coordenadas_im_prob <- selectCoordPython(im_prob_norm)
     for (j in seq_along(coordenadas_im_prob)) {
       coordenadas_im_prob[[j]] <- round(coordenadas_im_prob[[j]])
     }
