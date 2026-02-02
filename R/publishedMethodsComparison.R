@@ -184,6 +184,14 @@ calculateEvaluationPython <- function(objeto.seurat, mode = c("STalign", "PASTE2
   patientType <- match.arg(patientType)
   mode <- match.arg(mode)
 
+  if (missing(listaCoordenadas)) {
+    listaCoordenadas <- list() 
+  }
+
+  if (missing(listaCoordenadasNEW)) {
+    listaCoordenadasNEW <- list()
+  }
+
   if (!dir.exists(paste0("./results/",mode,"/"))) {
     dir.create(paste0("./results/",mode,"/"), recursive = TRUE)
   }
