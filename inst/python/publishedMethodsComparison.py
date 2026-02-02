@@ -50,6 +50,9 @@ def normalize_images(image):
              Normalized image.
     """
     pythonEnviroment("STalign")
+    from STalign import STalign
+    import torch
+
     im_norm = STalign.normalize(image)
     return im_norm
 
@@ -84,6 +87,12 @@ def STalign_transformation(points_im_prob_rc, points_im_ref_rc,
     """
 
     pythonEnviroment("STalign")
+    import sys
+    import numpy as np
+    from STalign import STalign
+    import matplotlib.pyplot as plt 
+    import torch
+
     # compute initial affine transformation from points
     L,T = STalign.L_T_from_points(points_im_prob_rc, points_im_ref_rc)
 
@@ -124,6 +133,13 @@ def STalign_transformation(points_im_prob_rc, points_im_ref_rc,
     v = out['v']
     xv = out['xv']
 
+    # Obtain affine result
+    v_empty = torch.zeros_like(v)
+
+    # Apply transformation using A and v_empty
+    align_image_affine = STalign.transform_image_source_to_target(xv, v_empty, A, [Y_im_prob,X_im_prob], im_prob_trans, [Y_im_ref,X_im_ref])
+    align_image_affine = align_image_affine.permute(1,2,0).numpy()
+
     # modify the source
     align_points_im_prob = STalign.transform_points_source_to_target(xv,v,A,np.stack([y_im_prob, x_im_prob], -1)) # transform the points
     align_points_im_prob = align_points_im_prob.numpy() # convert from tensor to numpy to access in R later
@@ -134,7 +150,8 @@ def STalign_transformation(points_im_prob_rc, points_im_ref_rc,
 
     return {
         "align_image_im_prob": align_image_im_prob,
-        "align_points_im_prob": align_points_im_prob}
+        "align_points_im_prob": align_points_im_prob,
+        "align_image_affine": align_image_affine}
 
 
 def h5ad_create():

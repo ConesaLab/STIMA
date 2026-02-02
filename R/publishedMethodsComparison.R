@@ -426,9 +426,9 @@ alignmentSTalign <- function(object, patientType = c('unique','multiple')) {
 
     align_image_im_prob <- result$align_image_im_prob
     align_points_im_prob <- result$align_points_im_prob
+    im_affine <- result$align_image_affine
 
     transf <- "affine+diffeo"
-
     listSTalignResults[[i]][[transf]][["image"]] <- align_image_im_prob
   
     posAligned <- align_points_im_prob ## currently in row-col order
@@ -440,6 +440,23 @@ alignmentSTalign <- function(object, patientType = c('unique','multiple')) {
     colnames(posAligned_adapt) <- c("imagerow", "imagecol")
     
     listSTalignResults[[i]][[transf]][["coords"]] <- posAligned_adapt
+
+    # Affine alignment only
+    transfAff <- "affine"
+    listSTalignResults[[i]][[transfAff]][["image"]] <- im_affine  
+
+    qc_path <- paste0(saveDir, "STalign_affine_", i, ".png")
+    
+    png(qc_path, width = 1000, height = 500)
+    par(mfrow = c(1, 2), mar = c(3, 3, 5, 1))
+    
+    # Imagen 1: Referencia
+    plot(as.raster(im_ref_norm), main = "Reference (Fixed)")
+    
+    # Imagen 2: Target tras el paso rígido/afín
+    plot(as.raster(im_affine), main = paste("Slice", i, "Initial Rigid Alignment"))
+    
+    dev.off()
   }
 
   # Save the list of aligned images and coordinates
