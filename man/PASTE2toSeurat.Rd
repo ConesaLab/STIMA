@@ -5,7 +5,11 @@
 \title{seurat2pythonCommunication
 PASTE2toSeurat(object, patientType = c('unique','multiple'))}
 \usage{
-PASTE2toSeurat(object, patientType = c("unique", "multiple"))
+PASTE2toSeurat(
+  object,
+  patientType = c("unique", "multiple"),
+  modes = c("h", "eh", "e")
+)
 }
 \arguments{
 \item{object}{Original object to be modified.}

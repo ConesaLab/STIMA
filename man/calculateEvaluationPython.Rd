@@ -10,8 +10,8 @@ patientType = c('unique','multiple'))}
 calculateEvaluationPython(
   objeto.seurat,
   mode = c("STalign", "PASTE2"),
-  listaCoordenadasNEW,
-  listaCoordenadas,
+  listaCoordenadasNEW = list(),
+  listaCoordenadas = list(),
   patientType = c("unique", "multiple")
 )
 }
