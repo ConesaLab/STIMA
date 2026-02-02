@@ -386,7 +386,7 @@ alignmentSTalign <- function(object, patientType = c('unique','multiple')) {
   y_im_ref <- posCalc_ref[,2]
 
 
-  for (i in  2:length(object@images))) {
+  for (i in  2:length(object@images)) {
     listSTalignResults[[i]] <- list()
   
     prob_image_coords <- object@images[[paste0("slice1.",i)]]@coordinates
