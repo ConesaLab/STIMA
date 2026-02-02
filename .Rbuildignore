@@ -6,3 +6,6 @@
 ^inst/extdata/exampleData/
 ^dev$
 ^LICENSE\.md$
+^.*\.git$
+^.*\.git/.*$
+^\.#.*$

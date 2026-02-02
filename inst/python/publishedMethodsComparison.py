@@ -49,6 +49,7 @@ def normalize_images(image):
     im_norm: torch tensor
              Normalized image.
     """
+    pythonEnviroment("STalign")
     im_norm = STalign.normalize(image)
     return im_norm
 
@@ -82,6 +83,7 @@ def STalign_transformation(points_im_prob_rc, points_im_ref_rc,
                           Aligned points in the source image. 
     """
 
+    pythonEnviroment("STalign")
     # compute initial affine transformation from points
     L,T = STalign.L_T_from_points(points_im_prob_rc, points_im_ref_rc)
 
