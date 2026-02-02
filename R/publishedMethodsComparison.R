@@ -178,19 +178,11 @@ STaligntoSeurat <- function(object.STalign, object, patientType = c('unique','mu
 #' @return Evaluation
 #' @export 
 calculateEvaluationPython <- function(objeto.seurat, mode = c("STalign", "PASTE2"), 
-                                listaCoordenadasNEW = NULL, listaCoordenadas = NULL, 
+                                listaCoordenadasNEW = list(), listaCoordenadas = list(), 
                                 patientType = c('unique','multiple')) {
 
   patientType <- match.arg(patientType)
   mode <- match.arg(mode)
-
-  if (is.null(listaCoordenadas)) {
-    listaCoordenadas <- list() 
-  }
-
-  if (is.null(listaCoordenadasNEW)) {
-    listaCoordenadasNEW <- list()
-  }
 
   if (!dir.exists(paste0("./results/",mode,"/"))) {
     dir.create(paste0("./results/",mode,"/"), recursive = TRUE)
