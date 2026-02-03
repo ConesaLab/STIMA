@@ -254,7 +254,7 @@ calculateEvaluationPython <- function(objeto.seurat, mode = c("STalign", "PASTE2
 #' @return A list of Seurat objects, each containing a reference and two problematic objects for deconvolution analysis.
 #' @import Seurat
 #' @export 
-createDeconvolutionListsPython <- function(object.seurat, object,
+createDeconvolutionListsPython <- function(object.seurat,
                                            split_by = "name",  
                                            mode = c("STalign", "PASTE2")) {
 
@@ -267,7 +267,7 @@ createDeconvolutionListsPython <- function(object.seurat, object,
   
   # Obtain the individual object of the slide
   # Splits the Seurat object into a list of Seurat objects based on the 'name' metadata
-  object.seurat.split.orig <- Seurat::SplitObject(object, split.by = split_by)
+  object.seurat.split.orig <- Seurat::SplitObject(object.seurat, split.by = split_by)
   
   # Create a copy of the split objects for transformed images
   object.seurat.split.trans <- object.seurat.split.orig
