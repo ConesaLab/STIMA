@@ -158,8 +158,8 @@ STaligntoSeurat <- function(object.STalign, object, patientType = c('unique','mu
 
   for (i in Ns) {
     object@images[[paste0("slice",i)]] <- object@images[[paste0("slice1.",i)]]
-    object@images[[paste0("slice",i)]]@image <- object.STalign[[i]][["affine+diffeo"]][["image"]]
-    object@images[[paste0("slice",i)]]@coordinates[,4:5] <- object.STalign[[i]][["affine+diffeo"]][["coords"]]
+    object@images[[paste0("slice",i)]]@image <- object.STalign[[as.integer(i)]][["affine+diffeo"]][["image"]]
+    object@images[[paste0("slice",i)]]@coordinates[,4:5] <- object.STalign[[as.integer(i)]][["affine+diffeo"]][["coords"]]
   }
 
   saveRDS(object, file = paste0(saveDir,"objectAligned_merge_STalign.rds"))
