@@ -154,7 +154,9 @@ STaligntoSeurat <- function(object.STalign, object, patientType = c('unique','mu
 
   object@images[["slice1"]] <- object@images[["slice1.1"]]
 
-  for (i in c(2:4)) {
+  Ns <- as.character(seq(2, length(object@images)))
+
+  for (i in Ns) {
     object@images[[paste0("slice",i)]] <- object@images[[paste0("slice1.",i)]]
     object@images[[paste0("slice",i)]]@image <- object.STalign[[i]][["affine+diffeo"]][["image"]]
     object@images[[paste0("slice",i)]]@coordinates[,4:5] <- object.STalign[[i]][["affine+diffeo"]][["coords"]]
