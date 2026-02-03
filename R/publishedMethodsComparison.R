@@ -152,9 +152,9 @@ STaligntoSeurat <- function(object.STalign, object, patientType = c('unique','mu
   }
   saveDir <- "./results/STalign/"
 
-  object@images[["slice1"]] <- object@images[["slice1.1"]]
-
   Ns <- as.character(seq(2, length(object@images)))
+
+  object@images[["slice1"]] <- object@images[["slice1.1"]]
 
   for (i in Ns) {
     object@images[[paste0("slice",i)]] <- object@images[[paste0("slice1.",i)]]
