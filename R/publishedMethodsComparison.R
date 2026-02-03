@@ -117,7 +117,7 @@ PASTE2toSeurat <- function(object, patientType = c('unique','multiple'), modes =
   }
   saveDir <- "./results/PASTE2/"
   
-  Ns <- as.character(seq(2, length(object@images)-1))
+  Ns <- as.character(seq(2, length(object@images)))
 
   for (mode in modes) {
     for (N in Ns) {
