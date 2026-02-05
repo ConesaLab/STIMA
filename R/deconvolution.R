@@ -544,7 +544,7 @@ calculateRVcoeff <- function(modes = c("GTEM", "procrustes", "RVSSimageJ"),
                           .packages = c("Seurat", "data.table","reshape2")) %dopar% {
       cat(mode)
       cat(im)
-      listaObjAnnot <- readRDS(paste0(saveDir,"objectAligned_merge_",mode,"_list_im",im,".rds"))
+      listaObjAnnot <- readRDS(paste0(saveDir,"objectAligned_RCTD_SCAnnot_merge_",mode,"_list_im",im,".rds"))
       
       for (j in 1:length(listaObjAnnot)) {Seurat::DefaultAssay(listaObjAnnot[[j]]) <- "deconvolution.RCTD.complete"; RCTDmode <- "deconvolution.RCTD.complete"}
       
