@@ -25,8 +25,8 @@ thereby preserving the independence of transcriptomic information across samples
 
 STIMA includes three distinct alignment approaches:
 
-- **Geometric Transformation Estimation Model (GTEM)**: [Krasheninnikov & Potapov 2012](https://doi.org/10.1134/S105466181202006X); [Zhao et al. 2022](https://doi.org/10.1016/B978-0-12-824349-7.00021-9)
-- **Procrustes Transformation**: [Gower 1975](https://doi.org/10.1007/BF02291478); [Murphy et al. 2020](https://doi.org/10.1214/19-BA1179)
+- **Geometric Transformation Estimation Model (GTEM)**: [Krasheninnikov & Potapov 2012](https://doi.org/10.1134/S105466181202006X); [Zhao *et al*. 2022](https://doi.org/10.1016/B978-0-12-824349-7.00021-9)
+- **Procrustes Transformation**: [Gower 1975](https://doi.org/10.1007/BF02291478); [Murphy *et al*. 2020](https://doi.org/10.1214/19-BA1179)
 - **The ImageJ plugin Register Virtual Stack Slices (RVSS-ImageJ)**: [ImageJ Wiki 2022](https://imagej.github.io/plugins/register-virtual-stack-slices)
 
 **STIMA** takes its name from the Valencian/Catalan word *estima*, meaning *'love'*.
@@ -79,11 +79,26 @@ STIMA provides the following vignettes to better understand the functionality of
 - If you crop the data and images before alignment, ensure that the tissue region containing gene expression information is correctly selected. Otherwise, the crop will be inaccurate, and the resulting tissue section could appear smaller than it actually is.
 - After performing the alignment, you will obtain a merged RDS object containing both the reference image and the aligned sample (note that the unaligned coordinates are also retained). You can split this object using the Seurat function SplitObject(). Then, remove the reference object and save the remaining data. It is explained in vignette [STIMA RDS-AnnData compatibility](vignettes/STIMA_PostAlignment.Rmd).
 
+### How to choose the right alignment method
+
+STIMA offers three alignment strategies depending on your data characteristics:
+
+- **RVSS-imageJ**: Best for images with well-defined structures and uniform coloring. This method is the fastest as it does not require manual landmarks.
+- **GTEM & Procrustes**: Preferred for samples with significant differences in shape or staining. Note that Procrustes may struggle if a large rotation angle is required.
+- **Manual Landmarks**: Use GTEM or Procrustes if your project requires high precision for specific regions of interest (ROI) or specific orientations.
+
+#### Evaluating the Results
+
+Although **visual inspection** is the most accurate way to choose the best result, you should use the provided metrics for objective confirmation. A lower **Euclidean distance** signifies better landmark alignment. **Pixel similarity** is also a valid metric, but only if the staining is consistent across all images.
+
 ### Example Data
 
-The data used to replicate the vignettes originate from [Yadav et al. (2023)](https://doi.org/10.1016/j.neuron.2023.01.007). 
-To access the data used in this package, you can visit the repository [STIMA-exampleData](https://github.com/vagm110901/STIMA-exampleData), 
+The data used to replicate the vignettes originate from [Yadav *et al*. (2023)](https://doi.org/10.1016/j.neuron.2023.01.007) and from [Basu *et al*. (2026)](https://doi.org/10.1038/s41380-026-03466-x). 
+To access the spinal cord data used in this package, you can visit the repository [STIMA-exampleData](https://github.com/vagm110901/STIMA-exampleData), 
 or download the raw files directly from the Gene Expression Omnibus (GEO) under the accession numbers 
 GEO: [GSE190442](http://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE190442) and 
 GEO: [GSE222322](http://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE222322).
-
+To access the brain data used in this package, you can download it from GEO under the accession number
+GEO: [GSE301012](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE301012) and 
+the single-cell RNA-seq data from the [Brain Science Data Center, Chinese Academy of Sciences](https://doi.org/10.12412/BSDC.1699433096.20001).
+  
