@@ -111,16 +111,16 @@ functionality of the package:
 ### How to choose the right alignment method
 
 STIMA offers three alignment strategies depending on your data
-characteristics:
+characteristics, but in general we recommend GTEM:
 
-- **RVSS-imageJ**: Best for images with well-defined structures and
-  uniform coloring. This method is the fastest as it does not require
-  manual landmarks.
 - **GTEM & Procrustes**: Preferred for samples with significant
   differences in shape or staining.
 - **Manual Landmarks**: Use GTEM or Procrustes if your project requires
   high precision for specific regions of interest (ROI) or specific
   orientations.
+- **RVSS-imageJ**: Best for images with well-defined structures and
+  uniform coloring. This method is the fastest as it does not require
+  manual landmarks.
 
 #### Evaluating the Results
 
