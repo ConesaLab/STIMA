@@ -529,8 +529,8 @@ matrixComparison <- function(listaObjAnnot,
                           coeffEV_Ref_NOT$p.value, coeffEV_NOT$p.value,     coeffEV_NOT_YES$p.value,
                           coeffEV_Ref_YES$p.value, coeffEV_NOT_YES$p.value, coeffEV_YES$p.value),    
                         nrow = 3, byrow = TRUE)
-  rownames(pval_matrix) <- c("Reference", "Original", "Transformed")
-  colnames(pval_matrix) <- c("Reference", "Original", "Transformed")
+  rownames(pval_matrix) <- c("1_Reference", "2_Original", "3_Transformed")
+  colnames(pval_matrix) <- c("1_Reference", "2_Original", "3_Transformed")
   
   #rvstd_matrix <- matrix(c(coeffEV_Ref$rvstd,     coeffEV_Ref_NOT$rvstd, coeffEV_Ref_YES$rvstd,
   #                         coeffEV_Ref_NOT$rvstd, coeffEV_NOT$rvstd,     coeffEV_NOT_YES$rvstd,
