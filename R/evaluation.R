@@ -184,9 +184,13 @@ controlAlign <- function(image1) {
   if (min(image1) >= 0 && max(image1) <= 1) image1 <- rgb_table_norm2rgb_table(image1)
   
   # Define the central region for analysis.
-  x1 <- round(dim(image1)[1] / 2)
-  y1 <- round(dim(image1)[2] / 2)
-  image1rec <- image1[(x1-200):(x1+200), (y1-200):(y1+200), ]
+  max_x <- dim(image1)[1]
+  max_y <- dim(image1)[2]
+  x1 <- round(max_x / 2)
+  y1 <- round(max_y / 2)
+  rows_rec <- max(1, x1-200):min(max_x, x1+200)
+  cols_rec <- max(1, y1-200):min(max_y, y1+200)
+  image1rec <- image1[rows_rec, cols_rec, ]
   
   # Calculate alignment metrics for positive control (image vs itself).
   mse_value <- mse(image1rec, image1rec)
@@ -211,9 +215,15 @@ controlAlign <- function(image1) {
                             rmse_value = rmse_value, ssim_value = ssim_value)
   
   # Calculate alignment metrics for movement control (image vs shifted version 10 positions to the rigth).
-  image3 <- image1[(x1-190):(x1+210), (y1-200):(y1+200), ]
-  mse_value <- mse(image1rec, image3)
-  mse_gray_value <- mseGS(image1rec, image3)
+  rows_shift <- max(1, x1-190):min(max_x, x1+210)
+  cols_shift <- max(1, y1-200):min(max_y, y1+200)
+  common_rows <- min(length(rows_rec), length(rows_shift))
+  common_cols <- min(length(cols_rec), length(cols_shift))
+  image1rec_final <- image1rec[1:common_rows, 1:common_cols, ]
+  image3 <- image1[rows_shift, cols_shift, ][1:common_rows, 1:common_cols, ]
+
+  mse_value <- mse(image1rec_final, image3)
+  mse_gray_value <- mseGS(image1rec_final, image3)
   rmse_value <- sqrt(mse_value)
   im3 <- SpatialPack::RGB2gray(image3)
   ssim_value <- SpatialPack::SSIM(im1, im3)[["SSIM"]]
@@ -353,16 +363,16 @@ evaluationComplete <- function(listaCoordenadasNEW, listaCoordenadas,
           dim2 <- dim(listaRawImages[[j]])
           
           if (patientType == 'unique') { 
-            x1_min <- max(0, x1 - 200)
-            y1_min <- max(0, y1 - 200)
+            x1_min <- max(1, x1 - 200)
+            y1_min <- max(1, y1 - 200)
             x1_max <- min(dim1[1], dim2[1], x1 + 200)
             y1_max <- min(dim1[2], dim2[2], y1 + 200)
             
             coordRange  <- list(x1_min:x1_max, y1_min:y1_max)
             
           } else if (patientType == 'multiple') {
-            x1_min <- max(0, x1 - 310)
-            y1_min <- max(0, y1 - 200)
+            x1_min <- max(1, x1 - 310)
+            y1_min <- max(1, y1 - 200)
             x1_max <- min(dim1[1], dim2[1], x1)
             y1_max <- min(dim1[2], dim2[2], y1 + 200)
             
@@ -397,12 +407,12 @@ evaluationComplete <- function(listaCoordenadasNEW, listaCoordenadas,
           dim2 <- dim(listaRawImages[[j]])
           
           if (patientType == 'unique') { 
-            x1_min <- max(0, x1 - 200)
-            y1_min <- max(0, y1 - 200)
+            x1_min <- max(1, x1 - 200)
+            y1_min <- max(1, y1 - 200)
             x1_max <- min(dim1[1], dim2[1], x1 + 200)
             y1_max <- min(dim1[2], dim2[2], y1 + 200)
-            x2_min <- max(0, x2 - 200)
-            y2_min <- max(0, y2 - 200)
+            x2_min <- max(1, x2 - 200)
+            y2_min <- max(1, y2 - 200)
             x2_max <- min(dim1[1], dim2[1], x2 + 200)
             y2_max <- min(dim1[2], dim2[2], y2 + 200)
             
@@ -410,12 +420,12 @@ evaluationComplete <- function(listaCoordenadasNEW, listaCoordenadas,
             coordRange2 <- list(x2_min:x2_max, y2_min:y2_max)
             
           } else if (patientType == 'multiple') {
-            x1_min <- max(0, x1 - 310)
-            y1_min <- max(0, y1 - 200)
+            x1_min <- max(1, x1 - 310)
+            y1_min <- max(1, y1 - 200)
             x1_max <- min(dim1[1], dim2[1], x1)
             y1_max <- min(dim1[2], dim2[2], y1 + 200)
-            x2_min <- max(0, x2 - 310)
-            y2_min <- max(0, y2 - 200)
+            x2_min <- max(1, x2 - 310)
+            y2_min <- max(1, y2 - 200)
             x2_max <- min(dim1[1], dim2[1], x2)
             y2_max <- min(dim1[2], dim2[2], y2 + 200)
             
@@ -514,16 +524,16 @@ evaluationComplete <- function(listaCoordenadasNEW, listaCoordenadas,
           dim2 <- dim(listaTransImages[[j]])
           
           if (patientType == 'unique') { 
-            x1_min <- max(0, x1 - 200)
-            y1_min <- max(0, y1 - 200)
+            x1_min <- max(1, x1 - 200)
+            y1_min <- max(1, y1 - 200)
             x1_max <- min(dim1[1], dim2[1], x1 + 200)
             y1_max <- min(dim1[2], dim2[2], y1 + 200)
             
             coordRange  <- list(x1_min:x1_max, y1_min:y1_max)
             
           } else if (patientType == 'multiple') {
-            x1_min <- max(0, x1 - 310)
-            y1_min <- max(0, y1 - 200)
+            x1_min <- max(1, x1 - 310)
+            y1_min <- max(1, y1 - 200)
             x1_max <- min(dim1[1], dim2[1], x1)
             y1_max <- min(dim1[2], dim2[2], y1 + 200)
             
@@ -558,12 +568,12 @@ evaluationComplete <- function(listaCoordenadasNEW, listaCoordenadas,
           dim2 <- dim(listaTransImages[[j]])
           
           if (patientType == 'unique') { 
-            x1_min <- max(0, x1 - 200)
-            y1_min <- max(0, y1 - 200)
+            x1_min <- max(1, x1 - 200)
+            y1_min <- max(1, y1 - 200)
             x1_max <- min(dim1[1], dim2[1], x1 + 200)
             y1_max <- min(dim1[2], dim2[2], y1 + 200)
-            x2_min <- max(0, x2 - 200)
-            y2_min <- max(0, y2 - 200)
+            x2_min <- max(1, x2 - 200)
+            y2_min <- max(1, y2 - 200)
             x2_max <- min(dim1[1], dim2[1], x2 + 200)
             y2_max <- min(dim1[2], dim2[2], y2 + 200)
             
@@ -571,12 +581,12 @@ evaluationComplete <- function(listaCoordenadasNEW, listaCoordenadas,
             coordRange2 <- list(x2_min:x2_max, y2_min:y2_max)
             
           } else if (patientType == 'multiple') {
-            x1_min <- max(0, x1 - 310)
-            y1_min <- max(0, y1 - 200)
+            x1_min <- max(1, x1 - 310)
+            y1_min <- max(1, y1 - 200)
             x1_max <- min(dim1[1], dim2[1], x1)
             y1_max <- min(dim1[2], dim2[2], y1 + 200)
-            x2_min <- max(0, x2 - 310)
-            y2_min <- max(0, y2 - 200)
+            x2_min <- max(1, x2 - 310)
+            y2_min <- max(1, y2 - 200)
             x2_max <- min(dim1[1], dim2[1], x2)
             y2_max <- min(dim1[2], dim2[2], y2 + 200)
             

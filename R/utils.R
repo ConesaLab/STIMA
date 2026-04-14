@@ -82,6 +82,70 @@ cropImage <- function(object, image_name, padding = 10) {
   return(object)
 }
 
+#' cropImage_notscaled(object, image_name, window_size)
+#'
+#' Crops a square region from a spatial image within a Seurat object,
+#' centered around the tissue coordinates. The cropped image and 
+#' corresponding coordinates are updated in the object, but not rescaled 
+#' so the real image size is the same in all.
+#'
+#' @param object A Seurat object containing spatial image data in the \code{@images} slot.
+#' @param image_name A character string indicating the name of the image within the Seurat object to crop.
+#' @param window_size An integer specifying how many pixels of size will have the images.
+#' @return A modified Seurat object with the specified image cropped and updated.
+#' @export
+cropImage_notscaled <- function(object, image_name, window_size) {
+  
+  img_obj <- object@images[[image_name]]
+  img_mat <- img_obj@image
+  coordslow <- GetTissueCoordinates(img_obj)
+  
+  # Tissue center by spots
+  x_center <- round(mean(range(coordslow$imagecol)))
+  y_center <- round(mean(range(coordslow$imagerow)))
+  
+  # Window frame
+  half_w <- round(window_size / 2)
+  
+  x_min <- x_center - half_w
+  y_min <- y_center - half_w
+  
+  # New frame empty
+  new_img <- array(1, dim = c(window_size, window_size, dim(img_mat)[3]))
+  
+  # Which part is inside the window 
+  img_x_start <- max(1, x_min); img_x_end <- min(dim(img_mat)[2], x_min + window_size - 1)
+  img_y_start <- max(1, y_min); img_y_end <- min(dim(img_mat)[1], y_min + window_size - 1)
+  
+  # Where it should be pasted in the empty frame
+  canvas_x_start <- if (x_min < 1) abs(x_min) + 2 else 1
+  canvas_y_start <- if (y_min < 1) abs(y_min) + 2 else 1
+  
+  canvas_x_end <- canvas_x_start + (img_x_end - img_x_start)
+  canvas_y_end <- canvas_y_start + (img_y_end - img_y_start)
+  
+  # Transfering pixels: scale 1:1
+  new_img[canvas_y_start:canvas_y_end, canvas_x_start:canvas_x_end, ] <- 
+    img_mat[img_y_start:img_y_end, img_x_start:img_x_end, ]
+  
+  # Actualize spots coordinates 
+  new_coords <- coordslow
+  new_coords$imagerow <- coordslow$imagerow - y_min + 1
+  new_coords$imagecol <- coordslow$imagecol - x_min + 1
+  
+  # Save the cropped object
+  new_img_obj <- img_obj
+  new_img_obj@image <- new_img
+  
+  sf <- img_obj@scale.factors
+  new_img_obj@coordinates$imagerow <- new_coords$imagerow / sf$lowres
+  new_img_obj@coordinates$imagecol <- new_coords$imagecol / sf$lowres
+  
+  object@images[[image_name]] <- new_img_obj
+  
+  return(object)
+}
+
 #' saveImages(object, out_dir = paste0(getwd(),"/original", format = c("tif","png"))
 #' 
 #' Extracts spatial images from a Seurat object (specifically from `object@images`) 
