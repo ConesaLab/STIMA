@@ -8,13 +8,20 @@
 [**STIMA**](https://github.com/ConesaLab/STIMA) (*Spatial
 Transcriptomics Image-based Methods for Alignment*), is designed to
 align two or more ST slices or samples, enabling the comparison and
-analysis of gene expression within the same regions. STIMA performs
-alignment in a pairwise comparison manner, considering one slice as a
-reference, which includes both the tissue microscope image and the
-spatial spot matrix of gene expression. However, STIMA relies
-exclusively on image data for alignment without incorporating gene
-expression data, thereby preserving the independence of transcriptomic
-information across samples.
+analysis of gene expression within the same regions.
+
+STIMA performs alignment in a **pairwise comparison** manner,
+considering one slice as a reference, which includes both the **tissue
+microscope image** and the **spatial spot matrix** of gene expression.
+It aligns simultaneously the histological microscopy image and the gene
+expression spot matrix.
+
+It relies exclusively on image data for alignment without incorporating
+gene expression data, thereby preserving the independence of
+transcriptomic information across samples.
+
+The alignment is done by affine transformations without demorfing the
+tissue original structure.
 
 STIMA includes three distinct alignment approaches:
 
@@ -29,7 +36,7 @@ STIMA includes three distinct alignment approaches:
   2022](https://imagej.github.io/plugins/register-virtual-stack-slices)
 
 **STIMA** takes its name from the Valencian/Catalan word *estima*,
-meaning *‘love’*.
+meaning ‘*love*’.
 
 ## Installation
 
@@ -126,9 +133,16 @@ characteristics, but in general we recommend GTEM:
 
 Although **visual inspection** is the most accurate way to choose the
 best result, you should use the provided metrics for objective
-confirmation. A lower **Euclidean distance** signifies better landmark
-alignment. **Pixel similarity** is also a valid metric, but only if the
-staining is consistent across all images.
+confirmation:
+
+- A lower **Euclidean distance** signifies better landmark alignment.
+- **Pixel similarity** is also a valid metric, but only if the staining
+  is consistent across all images. The lower the **grayscale MSE** and
+  the closer the **SSIM** is to 1, the better the alignment.
+- **Functional evaluation** can be performed by computing cell-type
+  deconvolution over the samples and checking the **RV coefficient**. A
+  value closer to 1 indicates greater similarity in cell-type
+  composition.
 
 ### Example Data
 

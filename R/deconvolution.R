@@ -457,65 +457,47 @@ matrixComparison <- function(listaObjAnnot,
   #table(complete.cases(imageMatrixRef))
   #table(complete.cases(imageMatrixNOT))
   #table(complete.cases(imageMatrixYES))
+  shared_groups <- stats::complete.cases(imageMatrixRef) & stats::complete.cases(imageMatrixNOT) & stats::complete.cases(imageMatrixYES)
+
+  if (sum(shared_groups, na.rm = TRUE) > 2) {
+    safe_rv <- function(m1, m2) {
+      tryCatch({
+        FactoMineR::coeffRV(m1, m2)
+      }, error = function(e) {
+        return(list(rv = NA, p.value = NA, rvstd = NA))
+      })
+    }
+
+  coeffEV_Ref_NOT <- safe_rv(imageMatrixRef[shared_groups],
+                             imageMatrixNOT[shared_groups])
+
+  coeffEV_Ref_YES <- safe_rv(imageMatrixRef[shared_groups],
+                             imageMatrixYES[shared_groups])
+
+  coeffEV_NOT_YES <- safe_rv(imageMatrixNOT[shared_groups],
+                             imageMatrixYES[shared_groups])
 
 
-  shared_groups_Ref_NOT <- stats::complete.cases(imageMatrixRef) & stats::complete.cases(imageMatrixNOT)
-  shared_groups_Ref_YES <- stats::complete.cases(imageMatrixRef) & stats::complete.cases(imageMatrixYES)
-  shared_groups_NOT_YES <- stats::complete.cases(imageMatrixNOT) & stats::complete.cases(imageMatrixYES)
+  coeffEV_Ref <- safe_rv(imageMatrixRef[shared_groups],
+                         imageMatrixRef[shared_groups])
+
+  coeffEV_NOT <- safe_rv(imageMatrixNOT[shared_groups],
+                         imageMatrixNOT[shared_groups])
+
+  coeffEV_YES <- safe_rv(imageMatrixYES[shared_groups],
+                         imageMatrixYES[shared_groups])
 
 
-  if (sum(shared_groups_Ref_NOT, na.rm = TRUE) > 0) {
-    coeffEV_Ref_NOT <- FactoMineR::coeffRV(imageMatrixRef[shared_groups_Ref_NOT],
-                                           imageMatrixNOT[shared_groups_Ref_NOT])
   } else {
-    message("ALERT: No shared grougs found, introducing NA to continue in coeffEV_Ref_NOT")
+    message("ALERT: ", sum(shared_groups, na.rm = TRUE), " shared groups found, introducing NA to continue")
     dummy_result <- list(rv = NA, p.value = NA, rvstd = NA)
+
     coeffEV_Ref_NOT <- dummy_result
-  }
-
-  if (sum(shared_groups_Ref_YES, na.rm = TRUE) > 0) {
-    coeffEV_Ref_YES <- FactoMineR::coeffRV(imageMatrixRef[shared_groups_Ref_YES],
-                                           imageMatrixYES[shared_groups_Ref_YES])
-  } else {
-    message("ALERT: No shared grougs found, introducing NA to continue in coeffEV_Ref_YES")
-    dummy_result <- list(rv = NA, p.value = NA, rvstd = NA)
     coeffEV_Ref_YES <- dummy_result
-  }
-  
-  if (sum(shared_groups_NOT_YES, na.rm = TRUE) > 0) {
-    coeffEV_NOT_YES <- FactoMineR::coeffRV(imageMatrixNOT[shared_groups_NOT_YES],
-                                           imageMatrixYES[shared_groups_NOT_YES])
-  } else {
-    message("ALERT: No shared grougs found, introducing NA to continue in coeffEV_NOT_YES")
-    dummy_result <- list(rv = NA, p.value = NA, rvstd = NA)
     coeffEV_NOT_YES <- dummy_result
-  }
-  
-  if (sum(stats::complete.cases(imageMatrixRef), na.rm = TRUE) > 0) {
-    coeffEV_Ref <- FactoMineR::coeffRV(imageMatrixRef[stats::complete.cases(imageMatrixRef)],
-                                       imageMatrixRef[stats::complete.cases(imageMatrixRef)])
-  } else {
-    message("ALERT: No shared grougs found, introducing NA to continue in coeffEV_Ref")
-    dummy_result <- list(rv = NA, p.value = NA, rvstd = NA)
-    coeffEV_Ref <- dummy_result
-  }
-  
-  if (sum(stats::complete.cases(imageMatrixNOT), na.rm = TRUE) > 0) {
-    coeffEV_NOT <- FactoMineR::coeffRV(imageMatrixNOT[stats::complete.cases(imageMatrixNOT)],
-                                       imageMatrixNOT[stats::complete.cases(imageMatrixNOT)])
-  } else {
-    message("ALERT: No shared grougs found, introducing NA to continue in coeffEV_NOT")
-    dummy_result <- list(rv = NA, p.value = NA, rvstd = NA)
-    coeffEV_NOT <- dummy_result
-  }
-
-  if (sum(stats::complete.cases(imageMatrixYES), na.rm = TRUE) > 0) {
-    coeffEV_YES <- FactoMineR::coeffRV(imageMatrixYES[stats::complete.cases(imageMatrixYES)],
-                                       imageMatrixYES[stats::complete.cases(imageMatrixYES)])
-  } else {
-    message("ALERT: No shared grougs found, introducing NA to continue in coeffEV_YES")
-    dummy_result <- list(rv = NA, p.value = NA, rvstd = NA)
-    coeffEV_YES <- dummy_result
+    coeffEV_Ref     <- dummy_result
+    coeffEV_NOT     <- dummy_result
+    coeffEV_YES     <- dummy_result
   }
   
   rv_matrix <- matrix(c(coeffEV_Ref$rv,     coeffEV_Ref_NOT$rv, coeffEV_Ref_YES$rv,
