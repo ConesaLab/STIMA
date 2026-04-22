@@ -5,11 +5,6 @@
 
 <!-- badges: end -->
 
-<p align="right">
-
-<img src="img/STIMA_logo.png" alt="img/STIMA_logo.png" width="50%">
-</p>
-
 [**STIMA**](https://github.com/ConesaLab/STIMA) (*Spatial
 Transcriptomics Image-based Methods for Alignment*), is designed to
 align two or more ST slices or samples, enabling the comparison and
@@ -27,6 +22,11 @@ transcriptomic information across samples.
 
 The alignment is done by affine transformations without demorfing the
 tissue original structure.
+
+<p align="right">
+
+<img src="img/STIMA_logo.png" alt="img/STIMA_logo.png" width="25%">
+</p>
 
 STIMA includes three distinct alignment approaches:
 
