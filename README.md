@@ -5,28 +5,28 @@
 
 <!-- badges: end -->
 
-[**STIMA**](https://github.com/ConesaLab/STIMA) (*Spatial
-Transcriptomics Image-based Methods for Alignment*), is designed to
-align two or more ST slices or samples, enabling the comparison and
-analysis of gene expression within the same regions.
+|  |  |
+|:---|---:|
+| [**STIMA**](https://github.com/ConesaLab/STIMA) (*Spatial Transcriptomics Image-based Methods for Alignment*), |  |
+
+is designed to align two or more ST slices or samples, enabling the
+comparison and analysis of gene expression within the same
+regions.<br><br>
 
 STIMA performs alignment in a **pairwise comparison** manner,
 considering one slice as a reference, which includes both the **tissue
 microscope image** and the **spatial spot matrix** of gene expression.
 It aligns simultaneously the histological microscopy image and the gene
-expression spot matrix.
+expression spot matrix.<br><br>
 
 It relies exclusively on image data for alignment without incorporating
 gene expression data, thereby preserving the independence of
-transcriptomic information across samples.
+transcriptomic information across samples.<br><br>
 
 The alignment is done by affine transformations without demorfing the
-tissue original structure.
+tissue original structure.\|
 
-<p align="right">
-
-<img src="img/STIMA_logo.png" alt="img/STIMA_logo.png" width="25%">
-</p>
+<img src="img/STIMA_logo.png" alt="img/STIMA_logo.png" width="250">\|
 
 STIMA includes three distinct alignment approaches:
 
