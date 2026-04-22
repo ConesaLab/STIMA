@@ -5,7 +5,7 @@
 
 <!-- badges: end -->
 
-<img src="img/STIMA_logo.png" alt="img/STIMA_logo.png" align="right" width="30%" style="margin-left: 20px;">
+<img src="img/STIMA_logo.png" alt="img/STIMA_logo.png" align="right" width="40%" style="margin-left: 20px;">
 
 [**STIMA**](https://github.com/ConesaLab/STIMA) (*Spatial
 Transcriptomics Image-based Methods for Alignment*), is designed to
