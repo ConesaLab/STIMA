@@ -16,6 +16,10 @@ knitr::opts_chunk$set(
 <!-- badges: start -->
 <!-- badges: end -->
 
+<p align="right">
+  <img src="img/STIMA_logo.png" alt="img/STIMA_logo.png" width="50%">
+</p>
+
 [**STIMA**](https://github.com/ConesaLab/STIMA) (*Spatial Transcriptomics Image-based Methods for Alignment*), 
 is designed to align two or more ST slices or samples, enabling the comparison and analysis of gene expression 
 within the same regions. 
