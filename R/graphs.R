@@ -315,7 +315,11 @@ graph_evalMetrics <- function(modes = c("GTEM", "procrustes", "RVSSimageJ","PAST
     
     eucl_p_value <- NaN
     
-    RV_p_value <- NaN
+    RV_test <- t.test(data_comparison$RV_original,
+                      data_comparison$RV_transformado,
+                      alternative = "less",
+                      paired = TRUE)
+    RV_p_value <- RV_test$p.value
     
     # Groupt the t.test results
     p_values_df <- data.frame(
@@ -372,13 +376,17 @@ graph_evalMetrics <- function(modes = c("GTEM", "procrustes", "RVSSimageJ","PAST
     mod <- lmerTest::lmer(
       distance ~ condition + (1 | image_id),
       data = dd)
-    # p‑value for ‘condition’ with Anova 
-    pcond <- anova(mod)["condition", "Pr(>F)"]
-    coef  <- summary(mod)$coefficients["conditiontransformed","Estimate"]
+
+    sum_mod <- summary(mod)$coefficients["conditiontransformed", ]
+    coef <- sum_mod["Estimate"]
+    p_two_sided <- sum_mod["Pr(>|t|)"]
+    # one-sided p-value
+    p_val <- ifelse(coef < 0, p_two_sided / 2, 1 - (p_two_sided / 2))
+
     data.frame(
       method      = method_i,
       estimate    = coef,
-      p_value     = pcond
+      p_value     = p_val
     )
   })
   resultsEucl <- do.call(rbind, resultsEucl)
@@ -386,42 +394,6 @@ graph_evalMetrics <- function(modes = c("GTEM", "procrustes", "RVSSimageJ","PAST
   for (mode in modes) {
     listaStats[[mode]][["Eucl_transformado","p_value"]] <- resultsEucl[resultsEucl$method == mode,"p_value"]
   }
-  
-  # Linear Mixed Model (LMM) for RV values  
-  
-  datosRV_long <- tidyr::pivot_longer(
-    datosRV,
-    cols = c(control, transformed),
-    names_to  = "condition",
-    values_to = "RV"
-  )
-  # ‘condition’ and ‘method’ as factors
-  datosRV_long$condition <- factor(datosRV_long$condition, levels = c("control","transformed"))
-  datosRV_long$method    <- factor(datosRV_long$method)
-  
-  # Linear Mixed Model
-  # distance ~ condition + (1 | image_id)
-
-  resultsRV <- lapply(levels(datosRV_long$method), function(method_i) {
-    dd <- subset(datosRV_long, method == method_i)
-    mod <- lmerTest::lmer(
-      RV ~ condition + (1 | image_id),
-      data = dd)
-    # p‑value for ‘condition’ with Anova 
-    pcond <- anova(mod)["condition", "Pr(>F)"]
-    coef  <- summary(mod)$coefficients["conditiontransformed","Estimate"]
-    data.frame(
-      method      = method_i,
-      estimate    = coef,
-      p_value     = pcond
-    )
-  })
-  resultsRV <- do.call(rbind, resultsRV)
-  
-  for (mode in modes) {
-    listaStats[[mode]][["RV_transformado","p_value"]] <- resultsRV[resultsRV$method == mode,"p_value"]
-  }
-  
   
   # Raw data for boxplots
   metrics_list <- c("MSE", "MSE_gray", "SSIM", "Eucl", "RV")
