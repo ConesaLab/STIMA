@@ -573,7 +573,17 @@ STIMA <- function(object, mode = c("GTEM", "procrustes", "RVSSimageJ"), scale = 
 
       } else if (mode == "procrustes") {
         print(val_sum_cuad)
-        indice_fila_minima <- names(which.min(val_sum_cuad))
+
+        val_sum_cuad_penalizado <- mapply(function(ss, nombre) {
+        vals <- calcParameters(listaOpciones[[i]][[nombre]], xmax, ymax, mode)
+        if (abs(vals[["trx"]]) >= 1 || abs(vals[["try"]]) >= 1) {
+          return(Inf)
+        } else {
+          return(ss)
+        }
+      }, val_sum_cuad, names(val_sum_cuad))
+  
+      indice_fila_minima <- names(which.min(val_sum_cuad_penalizado))
       }
       
       #indice_fila_minima <- names(which.min(suma_de_cuadrados)) # Name of minimum sum of squares
