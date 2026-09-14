@@ -584,6 +584,12 @@ STIMA <- function(object, mode = c("GTEM", "procrustes", "RVSSimageJ"), scale = 
       }, val_sum_cuad, names(val_sum_cuad))
   
       indice_fila_minima <- names(which.min(val_sum_cuad_penalizado))
+      
+      print("val_sum_cuad antes de penalizar:")
+      print(val_sum_cuad) 
+      print("val_sum_cuad penalizado:")
+      print(val_sum_cuad_penalizado)
+      print(indice_fila_minima)
       }
       
       #indice_fila_minima <- names(which.min(suma_de_cuadrados)) # Name of minimum sum of squares
