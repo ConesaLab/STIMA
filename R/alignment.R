@@ -483,10 +483,10 @@ STIMA <- function(object, mode = c("GTEM", "procrustes", "RVSSimageJ"), scale = 
         
         # Solve for the original orientation (without mirroring)
         matProb <- matrix(data = unlist(coordenadas2), ncol = 2)
-        proc <- IMIFA::Procrustes(X = matProb, Xstar = matrixCoord1, translate = TRUE, dilate = scale, sumsq = FALSE)
+        proc <- IMIFA::Procrustes(X = matProb, Xstar = matrixCoord1, translate = TRUE, dilate = scale, sumsq = TRUE)
         solucionOrig <- resultProcrustes(proc, 0, 0, scale)
         coordCalc[["solucionOrig"]] <- proc$X.new
-        EuclDistance[["solucionOrig"]] <- mean(EuclDist(list(coordenadas1, coordenadas2), c(1,2)))
+        val_sum_cuad[["solucionOrig"]] <- proc$ss
     
         # Solve with mirror on x-axis
         coordenadas2X <- coordenadas2
@@ -494,10 +494,10 @@ STIMA <- function(object, mode = c("GTEM", "procrustes", "RVSSimageJ"), scale = 
           coordenadas2X$x[[j]] <- xmax2 - coordenadas2X$x[[j]]
         }
         matProb <- matrix(data = unlist(coordenadas2X), ncol = 2)
-        proc <- IMIFA::Procrustes(X = matProb, Xstar = matrixCoord1, translate = TRUE, dilate = scale, sumsq = FALSE) 
+        proc <- IMIFA::Procrustes(X = matProb, Xstar = matrixCoord1, translate = TRUE, dilate = scale, sumsq = TRUE) 
         solucionMirrorX <- resultProcrustes(proc, 10, 0, scale)
         coordCalc[["solucionMirrorX"]] <- proc$X.new
-        EuclDistance[["solucionMirrorX"]] <- mean(EuclDist(list(coordenadas1, coordenadas2X), c(1,2)))
+        val_sum_cuad[["solucionOrig"]] <- proc$ss
     
         # Solve with mirror on y-axis
         coordenadas2Y <- coordenadas2
@@ -505,10 +505,10 @@ STIMA <- function(object, mode = c("GTEM", "procrustes", "RVSSimageJ"), scale = 
           coordenadas2Y$y[[j]] <- ymax2 - coordenadas2Y$y[[j]]
         }
         matProb <- matrix(data = unlist(coordenadas2Y), ncol = 2)
-        proc <- IMIFA::Procrustes(X = matProb, Xstar = matrixCoord1, translate = TRUE, dilate = scale, sumsq = FALSE)
+        proc <- IMIFA::Procrustes(X = matProb, Xstar = matrixCoord1, translate = TRUE, dilate = scale, sumsq = TRUE)
         solucionMirrorY <- resultProcrustes(proc, 0, 10, scale)
         coordCalc[["solucionMirrorY"]] <- proc$X.new
-        EuclDistance[["solucionMirrorY"]] <- mean(EuclDist(list(coordenadas1, coordenadas2Y), c(1,2)))
+        val_sum_cuad[["solucionOrig"]] <- proc$ss
         
         # Solve with mirror on both x and y axes
         coordenadas2XY <- coordenadas2
@@ -519,10 +519,10 @@ STIMA <- function(object, mode = c("GTEM", "procrustes", "RVSSimageJ"), scale = 
           coordenadas2XY$y[[j]] <- ymax2 - coordenadas2XY$y[[j]]
         }
         matProb <- matrix(data = unlist(coordenadas2XY), ncol = 2)
-        proc <- IMIFA::Procrustes(X = matProb, Xstar = matrixCoord1, translate = TRUE, dilate = scale, sumsq = FALSE)
+        proc <- IMIFA::Procrustes(X = matProb, Xstar = matrixCoord1, translate = TRUE, dilate = scale, sumsq = TRUE)
         solucionMirrorXY <- resultProcrustes(proc, 10, 1, scale)
         coordCalc[["solucionMirrorXY"]] <- proc$X.new
-        EuclDistance[["solucionMirrorXY"]] <- mean(EuclDist(list(coordenadas1, coordenadas2XY), c(1,2)))
+        val_sum_cuad[["solucionOrig"]] <- proc$ss
       }
     
       # Store each transformation option in a list for the current image
@@ -548,25 +548,31 @@ STIMA <- function(object, mode = c("GTEM", "procrustes", "RVSSimageJ"), scale = 
       listaOpcionesCalc[[i]] <- todosvalores
       
       # Calculate the sum of squares for each transformation option to find the optimal alignment
-      suma_de_cuadrados <- sapply(todosvalores, function(valores) {
-        if (abs(valores[["trx"]]) >= 1 || abs(valores[["try"]]) >= 1) {
-          return(Inf)
-        } else {
-          if (mode == "procrustes") {return(sum(valores[1:3]^2))
-          } else if (mode == "GTEM") {return(sum(valores[1:3]^2))}}
-      })
-      print(suma_de_cuadrados)
-      print(EuclDistance)
-      
-      suma_de_cuadrados_order <- sort(suma_de_cuadrados[is.finite(suma_de_cuadrados)])
-      EuclDistance_order <- sort(EuclDistance[is.finite(suma_de_cuadrados)])
-      for (nombre in names(suma_de_cuadrados_order)) {
-        pos_sc <- match(nombre, names(suma_de_cuadrados_order))
-        pos_ed <- match(nombre, names(EuclDistance_order))
-        if (!is.na(pos_ed) && (pos_ed <= pos_sc)) {
-          indice_fila_minima <- nombre
-          break
+      if (mode == "GTEM") {
+        suma_de_cuadrados <- sapply(todosvalores, function(valores) {
+          if (abs(valores[["trx"]]) >= 1 || abs(valores[["try"]]) >= 1) {
+            return(Inf)
+          } else {
+            return(sum(valores[1:3]^2))
+          }
+        })
+        print(suma_de_cuadrados)
+        print(EuclDistance)
+
+        suma_de_cuadrados_order <- sort(suma_de_cuadrados[is.finite(suma_de_cuadrados)])
+        EuclDistance_order <- sort(EuclDistance[is.finite(suma_de_cuadrados)])
+        for (nombre in names(suma_de_cuadrados_order)) {
+          pos_sc <- match(nombre, names(suma_de_cuadrados_order))
+          pos_ed <- match(nombre, names(EuclDistance_order))
+          if (!is.na(pos_ed) && (pos_ed <= pos_sc)) {
+            indice_fila_minima <- nombre
+            break
+          }
         }
+
+      } else if (mode == "procrustes") {
+        print(val_sum_cuad)
+        indice_fila_minima <- names(which.min(val_sum_cuad))
       }
       
       #indice_fila_minima <- names(which.min(suma_de_cuadrados)) # Name of minimum sum of squares
