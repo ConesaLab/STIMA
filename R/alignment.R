@@ -248,8 +248,15 @@ resultProcrustes <- function(proc, mirrorx, mirrory, scale) {
   seno <- proc$R[2,1]
   if (scale == TRUE) {e <- proc$d} else if (scale == FALSE) {e <- 1} 
 
-  if (mirrorx == 0 && mirrory == 0) {dy <- - proc$t[2]} else {dy <- proc$t[2]}
+  #if (mirrorx == 0 && mirrory == 0) {dy <- - proc$t[2]} else {dy <- proc$t[2]}
   dx <- proc$t[1]
+  if (mirrorx == 0 && mirrory == 0) {
+    dy <- -proc$t[2]
+  } else if (mirrorx != 0 && mirrory != 0) {
+    dy <- -proc$t[2]
+  } else {
+    dy <- proc$t[2]
+  }
   
   solucion <- c(coseno, seno, dx, dy, mirrorx, mirrory, e)
   names(solucion) <- c('coseno', 'seno', 'dx', 'dy', 'mirrorx', 'mirrory', 'e')
