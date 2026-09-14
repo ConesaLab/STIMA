@@ -164,13 +164,13 @@ calcNewCoord <- function(coord, sol, xmax, ymax) {
   coordMOD <- coord
   
   # Apply mirror transformations based on solution parameters
-  if (sol[["mirrorx"]] == 1) {
+  if (sol[["mirrorx"]] == 10) {
     for (j in seq_along(coordMOD$x)) {
       coordMOD$x[[j]] <- xmax - coordMOD$x[[j]]
     }
   }
   
-  if (sol[["mirrory"]] == 1) {
+  if (sol[["mirrory"]] == 10) {
     for (j in seq_along(coordMOD$y)) {
       coordMOD$y[[j]] <- ymax - coordMOD$y[[j]]
     }
@@ -582,12 +582,6 @@ STIMA <- function(object, mode = c("GTEM", "procrustes", "RVSSimageJ"), scale = 
       }, val_sum_cuad, names(val_sum_cuad))
   
       indice_fila_minima <- names(which.min(val_sum_cuad_penalizado))
-      
-      print("val_sum_cuad antes de penalizar:")
-      print(val_sum_cuad) 
-      print("val_sum_cuad penalizado:")
-      print(val_sum_cuad_penalizado)
-      print(indice_fila_minima)
       }
       
       #indice_fila_minima <- names(which.min(suma_de_cuadrados)) # Name of minimum sum of squares
