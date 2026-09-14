@@ -521,7 +521,16 @@ STIMA <- function(object, mode = c("GTEM", "procrustes", "RVSSimageJ"), scale = 
         }
         matProb <- matrix(data = unlist(coordenadas2XY), ncol = 2)
         proc <- IMIFA::Procrustes(X = matProb, Xstar = matrixCoord1, translate = TRUE, dilate = scale, sumsq = TRUE)
-        solucionMirrorXY <- resultProcrustes(proc, 10, 1, scale)
+
+        cat("R matrix:\n"); print(proc$R)
+        cat("t vector:", proc$t, "\n")
+        cat("ss:", proc$ss, "\n")
+        cat("X.new (primeras filas):\n"); print(head(proc$X.new))
+        cat("coordenadas1:\n"); print(coordenadas1)
+        cat("coordenadas2XY (tras espejo):\n"); print(coordenadas2XY)
+
+
+        solucionMirrorXY <- resultProcrustes(proc, 10, 10, scale)
         coordCalc[["solucionMirrorXY"]] <- proc$X.new
         val_sum_cuad[["solucionMirrorXY"]] <- proc$ss
       }
