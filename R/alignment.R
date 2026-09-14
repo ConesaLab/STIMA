@@ -498,7 +498,7 @@ STIMA <- function(object, mode = c("GTEM", "procrustes", "RVSSimageJ"), scale = 
         proc <- IMIFA::Procrustes(X = matProb, Xstar = matrixCoord1, translate = TRUE, dilate = scale, sumsq = TRUE) 
         solucionMirrorX <- resultProcrustes(proc, 10, 0, scale)
         coordCalc[["solucionMirrorX"]] <- proc$X.new
-        val_sum_cuad[["solucionOrig"]] <- proc$ss
+        val_sum_cuad[["solucionMirrorX"]] <- proc$ss
     
         # Solve with mirror on y-axis
         coordenadas2Y <- coordenadas2
@@ -509,7 +509,7 @@ STIMA <- function(object, mode = c("GTEM", "procrustes", "RVSSimageJ"), scale = 
         proc <- IMIFA::Procrustes(X = matProb, Xstar = matrixCoord1, translate = TRUE, dilate = scale, sumsq = TRUE)
         solucionMirrorY <- resultProcrustes(proc, 0, 10, scale)
         coordCalc[["solucionMirrorY"]] <- proc$X.new
-        val_sum_cuad[["solucionOrig"]] <- proc$ss
+        val_sum_cuad[["solucionMirrorY"]] <- proc$ss
         
         # Solve with mirror on both x and y axes
         coordenadas2XY <- coordenadas2
@@ -523,7 +523,7 @@ STIMA <- function(object, mode = c("GTEM", "procrustes", "RVSSimageJ"), scale = 
         proc <- IMIFA::Procrustes(X = matProb, Xstar = matrixCoord1, translate = TRUE, dilate = scale, sumsq = TRUE)
         solucionMirrorXY <- resultProcrustes(proc, 10, 1, scale)
         coordCalc[["solucionMirrorXY"]] <- proc$X.new
-        val_sum_cuad[["solucionOrig"]] <- proc$ss
+        val_sum_cuad[["solucionMirrorXY"]] <- proc$ss
       }
     
       # Store each transformation option in a list for the current image
