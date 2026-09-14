@@ -429,6 +429,7 @@ STIMA <- function(object, mode = c("GTEM", "procrustes", "RVSSimageJ"), scale = 
 
       coordCalc <- list()
       EuclDistance <- numeric()
+      val_sum_cuad <- list()
 
       if (mode == "GTEM") {
 
