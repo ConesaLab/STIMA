@@ -243,15 +243,25 @@ calcScal <- function(coord1, coord2) {
 #'   - `e`: scaling factor (1 if `scale` is FALSE).
 #'
 #' @export
-resultProcrustes <- function(proc, mirrorx, mirrory, scale) {
+resultProcrustes <- function(proc, mirrorx, mirrory, scale, coordenadas2mirror, xmax2, ymax2) {
   coseno <- proc$R[1,1]
   seno <- proc$R[2,1]
   if (scale == TRUE) {e <- proc$d} else if (scale == FALSE) {e <- 1} 
   
 
-  if (mirrorx == 0 && mirrory == 0) {dy <- - proc$t[2]} else {dy <- proc$t[2]}
-  dx <- proc$t[1]
+  #if (mirrorx == 0 && mirrory == 0) {dy <- - proc$t[2]} else {dy <- proc$t[2]}
+  #dx <- proc$t[1]
   
+  # Centroid analysis
+  cx_orig <- mean(unlist(coordenadas2mirror$x))
+  cy_orig <- mean(unlist(coordenadas2mirror$y))
+  cx_new <- mean(proc$X.new[,1])
+  cy_new <- mean(proc$X.new[,2])
+
+  # The real translation is the centroids difference
+  dx <- cx_new - cx_orig
+  dy <- cy_new - cy_orig
+
   
   solucion <- c(coseno, seno, dx, dy, mirrorx, mirrory, e)
   names(solucion) <- c('coseno', 'seno', 'dx', 'dy', 'mirrorx', 'mirrory', 'e')
@@ -485,7 +495,7 @@ STIMA <- function(object, mode = c("GTEM", "procrustes", "RVSSimageJ"), scale = 
         # Solve for the original orientation (without mirroring)
         matProb <- matrix(data = unlist(coordenadas2), ncol = 2)
         proc <- IMIFA::Procrustes(X = matProb, Xstar = matrixCoord1, translate = TRUE, dilate = scale, sumsq = TRUE)
-        solucionOrig <- resultProcrustes(proc, 0, 0, scale)
+        solucionOrig <- resultProcrustes(proc, 0, 0, scale, coordenadas2, xmax2, ymax2)
         coordCalc[["solucionOrig"]] <- proc$X.new
         val_sum_cuad[["solucionOrig"]] <- proc$ss
     
@@ -496,7 +506,7 @@ STIMA <- function(object, mode = c("GTEM", "procrustes", "RVSSimageJ"), scale = 
         }
         matProb <- matrix(data = unlist(coordenadas2X), ncol = 2)
         proc <- IMIFA::Procrustes(X = matProb, Xstar = matrixCoord1, translate = TRUE, dilate = scale, sumsq = TRUE) 
-        solucionMirrorX <- resultProcrustes(proc, 10, 0, scale)
+        solucionMirrorX <- resultProcrustes(proc, 10, 0, scale, coordenadas2X, xmax2, ymax2)
         coordCalc[["solucionMirrorX"]] <- proc$X.new
         val_sum_cuad[["solucionMirrorX"]] <- proc$ss
     
@@ -507,7 +517,7 @@ STIMA <- function(object, mode = c("GTEM", "procrustes", "RVSSimageJ"), scale = 
         }
         matProb <- matrix(data = unlist(coordenadas2Y), ncol = 2)
         proc <- IMIFA::Procrustes(X = matProb, Xstar = matrixCoord1, translate = TRUE, dilate = scale, sumsq = TRUE)
-        solucionMirrorY <- resultProcrustes(proc, 0, 10, scale)
+        solucionMirrorY <- resultProcrustes(proc, 0, 10, scale, coordenadas2Y, xmax2, ymax2)
         coordCalc[["solucionMirrorY"]] <- proc$X.new
         val_sum_cuad[["solucionMirrorY"]] <- proc$ss
         
@@ -521,16 +531,7 @@ STIMA <- function(object, mode = c("GTEM", "procrustes", "RVSSimageJ"), scale = 
         }
         matProb <- matrix(data = unlist(coordenadas2XY), ncol = 2)
         proc <- IMIFA::Procrustes(X = matProb, Xstar = matrixCoord1, translate = TRUE, dilate = scale, sumsq = TRUE)
-
-        cat("R matrix:\n"); print(proc$R)
-        cat("t vector:", proc$t, "\n")
-        cat("ss:", proc$ss, "\n")
-        cat("X.new (primeras filas):\n"); print(head(proc$X.new))
-        cat("coordenadas1:\n"); print(coordenadas1)
-        cat("coordenadas2XY (tras espejo):\n"); print(coordenadas2XY)
-
-
-        solucionMirrorXY <- resultProcrustes(proc, 10, 10, scale)
+        solucionMirrorXY <- resultProcrustes(proc, 10, 10, scale, coordenadas2XY, xmax2, ymax2)
         coordCalc[["solucionMirrorXY"]] <- proc$X.new
         val_sum_cuad[["solucionMirrorXY"]] <- proc$ss
       }
